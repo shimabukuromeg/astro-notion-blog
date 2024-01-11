@@ -17,7 +17,6 @@ export async function getOgImage(title: string) {
                 width: '1200px',
                 height: '630px',
                 backgroundColor: '#52ACFF',
-                backgroundImage: 'linear-gradient(225deg, #52ACFF 34%, #FFE32C 100%)',
                 display: 'flex',
                 flexWrap: 'nowrap',
                 justifyContent: 'center',
