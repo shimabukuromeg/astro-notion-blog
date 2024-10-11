@@ -87,7 +87,11 @@ if (database.Icon && database.Icon.Type === 'file') {
           image: `${siteOGImage}`,
         }
       }}
-      twitter={{
+      twitter={openGraph ? {
+        card: 'summary_large_image',
+        title: openGraph.basic.title,
+        image: openGraph.basic.image,
+      } : {
         card: 'summary_large_image',
       }}
     />
