@@ -82,7 +82,7 @@ export async function getAllPosts(): Promise<Post[]> {
         {
           property: 'Date',
           date: {
-            on_or_before: new Date().toISOString(),
+            on_or_before: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
           },
         },
       ],
