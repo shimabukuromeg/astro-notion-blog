@@ -12,8 +12,13 @@
   }
 }
 
-/* Editorial List スタイル */
+/* 記事詳細ページ用（既存スタイル維持） */
 .post {
+  margin: 0 auto 40px;
+}
+
+/* Editorial List スタイル（トップページ・一覧ページ用） */
+.postItem {
   display: flex;
   gap: 1.5rem;
   padding: 1.5rem 0;
@@ -21,13 +26,13 @@
   margin: 0;
   transition: background-color 0.2s ease;
 }
-.post:first-child {
+.postItem:first-child {
   padding-top: 0;
 }
-.post:last-child {
+.postItem:last-child {
   border-bottom: none;
 }
-.post:hover {
+.postItem:hover {
   background-color: rgba(0, 0, 0, 0.015);
 }
 
@@ -46,7 +51,7 @@
 }
 
 @media (max-width: 640px) {
-  .post {
+  .postItem {
     flex-direction: column;
     gap: 1rem;
     padding: 1.25rem 0;
