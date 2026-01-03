@@ -39,7 +39,7 @@ const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
             <img src={image} alt="Image in a image block" loading="lazy" />
           )}
         </div>
-        <Caption richTexts={block.Image.Caption} />
+        {!captionLink && block.Image?.Caption && <Caption richTexts={block.Image.Caption} />}
       </div>
     )
   }
