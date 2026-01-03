@@ -1,6 +1,5 @@
 ---
-import { Post } from '../lib/interfaces.ts'
-import { filePath } from '../lib/blog-helpers'
+import type { Post } from '../lib/interfaces.ts'
 
 export interface Props {
   post: Post
@@ -8,31 +7,41 @@ export interface Props {
 
 const { post } = Astro.props
 
-let image = ''
-if (post.FeaturedImage && post.FeaturedImage.Url) {
-  if (import.meta.env.DEV) {
-    image = post.FeaturedImage.Url
-  } else {
-    image = filePath(new URL(post.FeaturedImage.Url))
-  }
-}
+// 自動生成されるOGP画像を使用
+const image = `/og/${post.Slug}.png`
 ---
 
-{
-  image && (
-    <div class="post-featured-image">
-      <img src={image} alt="Featured image of the post" />
-    </div>
-  )
-}
+<div class="post-thumbnail">
+  <a href={`/posts/${post.Slug}`}>
+    <img src={image} alt={post.Title} loading="lazy" />
+  </a>
+</div>
 
 <style>
-  .post-featured-image {
-    padding: 0.6rem 0 0.2rem;
+  .post-thumbnail {
+    flex-shrink: 0;
+    width: 200px;
   }
-  .post-featured-image img {
+  .post-thumbnail a {
     display: block;
-    max-width: 100%;
-    max-height: 20rem;
+  }
+  .post-thumbnail img {
+    width: 100%;
+    aspect-ratio: 1200/630;
+    object-fit: cover;
+    border-radius: 4px;
+    transition: opacity 0.2s ease;
+  }
+  .post-thumbnail img:hover {
+    opacity: 0.85;
+  }
+  @media (max-width: 640px) {
+    .post-thumbnail {
+      width: 100%;
+    }
+    .post-thumbnail img {
+      aspect-ratio: 1200/630;
+      width: 100%;
+    }
   }
 </style>
