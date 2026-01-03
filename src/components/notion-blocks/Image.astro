@@ -16,6 +16,10 @@ if (block.Image.External) {
 } else if (block.Image.File) {
   image = filePath(new URL(block.Image.File.Url))
 }
+
+// キャプションにリンクがある場合、画像をそのリンクで囲む
+const caption = block.Image?.Caption?.[0]
+const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
 ---
 
 <figure class="image">
@@ -23,7 +27,11 @@ if (block.Image.External) {
     image && (
       <div>
         <div>
-          {ENABLE_LIGHTBOX ? (
+          {captionLink ? (
+            <a href={captionLink} target="_blank" rel="noopener noreferrer">
+              <img src={image} alt="Image in a image block" loading="lazy" />
+            </a>
+          ) : ENABLE_LIGHTBOX ? (
             <a data-fslightbox href={image} data-type="image">
               <img src={image} alt="Image in a image block" loading="lazy" />
             </a>
