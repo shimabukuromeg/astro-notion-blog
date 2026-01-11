@@ -12,6 +12,18 @@
   margin: 0 auto 40px;
 }
 
+.post :global(.post-title) {
+  margin-bottom: 0.75rem;
+}
+
+.post :global(.post-date) {
+  margin-bottom: 0.5rem;
+}
+
+.post :global(.post-tags) {
+  margin-bottom: 2rem;
+}
+
 /* シンプルリストスタイル（トップページ・一覧ページ用） */
 .postListItem {
   display: flex;
