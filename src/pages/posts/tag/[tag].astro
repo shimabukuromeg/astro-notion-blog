@@ -3,20 +3,14 @@ import type { SelectProperty } from '../../../lib/interfaces.ts'
 import { NUMBER_OF_POSTS_PER_PAGE } from '../../../server-constants.ts'
 import {
   getPostsByTag,
-  getRankedPosts,
   getAllTags,
   getNumberOfPagesByTag,
 } from '../../../lib/notion/client.ts'
 import Layout from '../../../layouts/Layout.astro'
 import NoContents from '../../../components/NoContents.astro'
 import PostDate from '../../../components/PostDate.astro'
-import PostTags from '../../../components/PostTags.astro'
 import PostTitle from '../../../components/PostTitle.astro'
-import PostFeaturedImage from '../../../components/PostFeaturedImage.astro'
-import PostExcerpt from '../../../components/PostExcerpt.astro'
 import Pagination from '../../../components/Pagination.astro'
-import BlogPostsLink from '../../../components/BlogPostsLink.astro'
-import BlogTagsLink from '../../../components/BlogTagsLink.astro'
 import styles from '../../../styles/blog.module.css'
 import '../../../styles/notion-color.css'
 
@@ -27,10 +21,8 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.params
 
-const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
+const [posts, numberOfPages] = await Promise.all([
   getPostsByTag(tag, NUMBER_OF_POSTS_PER_PAGE),
-  getRankedPosts(),
-  getAllTags(),
   getNumberOfPagesByTag(tag),
 ])
 
@@ -50,16 +42,9 @@ const currentTag = posts[0].Tags.find((t) => t.name === tag)
         <NoContents contents={posts} />
       ) : (
         posts.map((post) => (
-          <article class={styles.postItem}>
-            <PostFeaturedImage post={post} />
-            <div class={styles.postContent}>
-              <PostTitle post={post} enableLink={true} />
-              <div class={styles.postMeta}>
-                <PostDate post={post} />
-                <PostTags post={post} enableLink={true} />
-              </div>
-              <PostExcerpt post={post} />
-            </div>
+          <article class={styles.postListItem}>
+            <PostDate post={post} />
+            <PostTitle post={post} enableLink={true} />
           </article>
         ))
       )
@@ -69,24 +54,13 @@ const currentTag = posts[0].Tags.find((t) => t.name === tag)
       <Pagination tag={tag} currentPage={1} numberOfPages={numberOfPages} />
     </footer>
   </div>
-
-  <div slot="aside" class={styles.aside}>
-    <BlogPostsLink heading="おすすめ" posts={rankedPosts} />
-    <BlogTagsLink heading="カテゴリー" tags={tags} />
-  </div>
 </Layout>
 
 <style>
   .tag-container {
-    margin: 0;
+    margin: 0 0 1rem;
     line-height: 1.3;
-    font-size: 1.2rem;
-    font-weight: normal;
-  }
-  @media (max-width: 640px) {
-    .tag-container {
-      font-size: 1.15rem;
-    }
+    font-size: 0.9rem;
   }
   .tag-container span.tag {
     border-radius: 4px;

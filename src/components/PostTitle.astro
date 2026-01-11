@@ -51,36 +51,42 @@ let title = post.Title
 </h2>
 
 <style>
+  /* 詳細ページ用（リンクなし） */
   .post-title {
     margin: 0;
-    padding: 0.2rem 0;
-    font-size: 2rem;
+    padding: 0;
+    font-size: 1.8rem;
     font-weight: 700;
     color: var(--fg);
   }
+
+  /* 一覧ページ用（リンクあり） */
   .post-title a {
-    font-size: 1.6rem;
-    color: inherit;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--link-color, #0066cc);
   }
+  .post-title a:hover {
+    text-decoration: underline;
+  }
+
   .post-title span,
   .post-title img {
     display: inline-block;
     margin-right: 0.2em;
   }
   .post-title span {
-    font-size: 1.2em;
+    font-size: 1em;
   }
   .post-title img {
-    width: 1.3em;
-    height: 1.3em;
-    vertical-align: sub;
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: baseline;
   }
+
   @media (max-width: 640px) {
     .post-title {
       font-size: 1.4rem;
-    }
-    .post-title a {
-      font-size: 1.2rem;
     }
   }
 </style>

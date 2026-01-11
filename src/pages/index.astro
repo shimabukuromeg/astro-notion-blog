@@ -2,26 +2,17 @@
 import { NUMBER_OF_POSTS_PER_PAGE } from '../server-constants.ts'
 import {
   getPosts,
-  getRankedPosts,
-  getAllTags,
   getNumberOfPages,
 } from '../lib/notion/client.ts'
 import Layout from '../layouts/Layout.astro'
 import NoContents from '../components/NoContents.astro'
 import PostDate from '../components/PostDate.astro'
-import PostTags from '../components/PostTags.astro'
 import PostTitle from '../components/PostTitle.astro'
-import PostFeaturedImage from '../components/PostFeaturedImage.astro'
-import PostExcerpt from '../components/PostExcerpt.astro'
 import Pagination from '../components/Pagination.astro'
-import BlogPostsLink from '../components/BlogPostsLink.astro'
-import BlogTagsLink from '../components/BlogTagsLink.astro'
 import styles from '../styles/blog.module.css'
 
-const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
+const [posts, numberOfPages] = await Promise.all([
   getPosts(NUMBER_OF_POSTS_PER_PAGE),
-  getRankedPosts(),
-  getAllTags(),
   getNumberOfPages(),
 ])
 ---
@@ -33,16 +24,9 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
         <NoContents contents={posts} />
       ) : (
         posts.map((post) => (
-          <article class={styles.postItem}>
-            <PostFeaturedImage post={post} />
-            <div class={styles.postContent}>
-              <PostTitle post={post} enableLink={true} />
-              <div class={styles.postMeta}>
-                <PostDate post={post} />
-                <PostTags post={post} enableLink={true} />
-              </div>
-              <PostExcerpt post={post} />
-            </div>
+          <article class={styles.postListItem}>
+            <PostDate post={post} />
+            <PostTitle post={post} enableLink={true} />
           </article>
         ))
       )
@@ -51,10 +35,5 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
     <footer>
       <Pagination currentPage={1} numberOfPages={numberOfPages} />
     </footer>
-  </div>
-
-  <div slot="aside" class={styles.aside}>
-    <BlogPostsLink heading="おすすめ" posts={rankedPosts} />
-    <BlogTagsLink heading="カテゴリー" tags={tags} />
   </div>
 </Layout>

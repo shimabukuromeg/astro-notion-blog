@@ -3,11 +3,8 @@ import * as interfaces from '../../lib/interfaces.ts'
 import {
   getPosts,
   getAllPosts,
-  getRankedPosts,
   getPostBySlug,
-  getPostsByTag,
   getBlock,
-  getAllTags,
   getAllBlocksByBlockId,
   downloadFile,
 } from '../../lib/notion/client.ts'
@@ -22,8 +19,6 @@ import PostTags from '../../components/PostTags.astro'
 import PostTitle from '../../components/PostTitle.astro'
 import PostBody from '../../components/PostBody.astro'
 import PostRelativeLink from '../../components/PostRelativeLink.astro'
-import BlogPostsLink from '../../components/BlogPostsLink.astro'
-import BlogTagsLink from '../../components/BlogTagsLink.astro'
 import styles from '../../styles/blog.module.css'
 
 export async function getStaticPaths() {
@@ -38,15 +33,10 @@ if (!post) {
   throw new Error('Post not found. slug: ${slug}')
 }
 
-const [blocks, allPosts, rankedPosts, recentPosts, tags, postsHavingSameTag] =
-  await Promise.all([
-    getAllBlocksByBlockId(post.PageId),
-    getAllPosts(),
-    getRankedPosts(),
-    getPosts(5),
-    getAllTags(),
-    getPostsByTag(post.Tags[0]?.name, 6),
-  ])
+const [blocks, allPosts] = await Promise.all([
+  getAllBlocksByBlockId(post.PageId),
+  getAllPosts(),
+])
 
 const fileAtacchedBlocks = extractTargetBlocks('image', blocks)
   .concat(extractTargetBlocks('file', blocks))
@@ -109,28 +99,15 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 >
 
   <div slot="main" class={styles.main}>
-    <div class={styles.post}>
+    <article class={styles.post}>
+      <PostTitle post={post} enableLink={false} />
       <PostDate post={post} />
       <PostTags post={post} />
-      <PostTitle post={post} enableLink={false} />
       <PostBody blocks={blocks} />
-      <PostTags post={post} />
 
       <footer>
         <PostRelativeLink prevPost={prevPost} nextPost={nextPost} />
       </footer>
-    </div>
-  </div>
-
-  <div slot="aside" class="aside">
-    <BlogPostsLink
-      heading="同じカテゴリーの記事"
-      posts={postsHavingSameTag.filter(
-        (p: interfaces.Post) => p.Slug !== post.Slug
-      )}
-    />
-    <BlogPostsLink heading="おすすめ" posts={rankedPosts} />
-    <BlogPostsLink heading="最新の記事" posts={recentPosts} />
-    <BlogTagsLink heading="カテゴリー" tags={tags} />
+    </article>
   </div>
 </Layout>

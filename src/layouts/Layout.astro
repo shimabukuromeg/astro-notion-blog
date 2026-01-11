@@ -1,12 +1,13 @@
 ---
 import { SEO } from 'astro-seo';
 import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants.ts'
-import { getDatabase } from '../lib/notion/client.ts'
-import { getNavLink, getStaticFilePath, filePath } from '../lib/blog-helpers.ts'
+import { getDatabase, getAllTags } from '../lib/notion/client.ts'
+import { getNavLink, getStaticFilePath } from '../lib/blog-helpers.ts'
 import '../styles/syntax-coloring.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import SearchModal from '../components/SearchModal.astro'
 import SearchButton from '../components/SearchButton.astro'
+import BlogTagsLink from '../components/BlogTagsLink.astro'
 
 export interface Props {
   title: string
@@ -28,6 +29,7 @@ export type OpenGraph = {
 };
 
 const database = await getDatabase()
+const tags = await getAllTags()
 
 const {
   title = '',
@@ -44,28 +46,6 @@ const siteOGImage = new URL(
   getStaticFilePath('/default-og-image.png'),
   Astro.site
 )
-
-let coverImageURL: string
-if (database.Cover) {
-  if (database.Cover.Type === 'external') {
-    coverImageURL = database.Cover.Url
-  } else if (database.Cover.Type === 'file') {
-    try {
-      coverImageURL = filePath(new URL(database.Cover.Url))
-    } catch (err) {
-      console.log('Invalid DB cover image URL')
-    }
-  }
-}
-
-let customIconURL: string
-if (database.Icon && database.Icon.Type === 'file') {
-  try {
-    customIconURL = filePath(new URL(database.Icon.Url))
-  } catch (err) {
-    console.log('Invalid DB custom icon URL')
-  }
-}
 ---
 
 <!DOCTYPE html>
@@ -105,71 +85,24 @@ if (database.Icon && database.Icon.Type === 'file') {
   <body>
     <GoogleAnalytics trackingId={PUBLIC_GA_TRACKING_ID} />
     <div class="container">
-      <header>
-        {
-          coverImageURL && (
-            <div class="cover">
-              <img src={coverImageURL} alt="Site cover image" loading="lazy" />
-            </div>
-          )
-        }
+      <header class="site-header">
+        <nav>
+          <a href={getNavLink('/')} class="site-title">{database.Title}</a>
+        </nav>
+        <SearchButton />
       </header>
 
-      <div>
-        <main>
-          <div class="content">
-            <header>
-              <h1>
-                <a href={getNavLink('/')}>
-                  {
-                    database.Icon && database.Icon.Type === 'emoji' ? (
-                      <>
-                        <span>{database.Icon.Emoji}</span>
-                        {database.Title}
-                      </>
-                    ) : database.Icon && database.Icon.Type === 'external' ? (
-                      <>
-                        <img src={database.Icon.Url} alt="Site icon image" />
-                        {database.Title}
-                      </>
-                    ) : database.Icon && database.Icon.Type === 'file' ? (
-                      <>
-                        <img
-                          src={customIconURL}
-                          class="custom-icon"
-                          alt="Site icon image"
-                        />
-                        {database.Title}
-                      </>
-                    ) : (
-                      database.Title
-                    )
-                  }
-                </a>
-              </h1>
-              <div class="description">
-                {database.Description}
-              </div>
-            </header>
+      <main>
+        <slot name="main" />
+      </main>
 
-            <slot name="main" />
-
-            <footer>
-              <div>
-                <span>Powered by&nbsp;</span>
-                <a href="https://github.com/otoyo/astro-notion-blog"
-                  >astro-notion-blog</a
-                >
-              </div>
-            </footer>
-          </div>
-        </main>
-
-        <aside>
-          <SearchButton />
-          <slot name="aside" />
-        </aside>
-      </div>
+      <footer class="site-footer">
+        <BlogTagsLink heading="カテゴリー" tags={tags} />
+        <div class="copyright">
+          <span>Powered by&nbsp;</span>
+          <a href="https://github.com/otoyo/astro-notion-blog">astro-notion-blog</a>
+        </div>
+      </footer>
     </div>
 
     <SearchModal />
@@ -184,114 +117,51 @@ if (database.Icon && database.Icon.Type === 'file') {
 <style>
   .container {
     min-height: 100vh;
+    max-width: var(--content-width);
+    margin: 0 auto;
+    padding: 0 20px;
   }
 
-  .container > div {
+  .site-header {
     display: flex;
-    max-width: 1280px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 0;
   }
-  @media (max-width: 640px) {
-    .container > div {
-      display: block;
-    }
+
+  .site-header nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .site-header .site-title {
+    font-weight: 400;
+    color: var(--fg);
+    font-size: 1rem;
+  }
+  .site-header .site-title:hover {
+    text-decoration: underline;
   }
 
   main {
-    flex: 1;
-    order: 2;
-    justify-content: space-between;
-  }
-  @media (max-width: 640px) {
-    main {
-      order: 1;
-    }
+    padding: 1rem 0;
   }
 
-  aside {
-    order: 1;
-    width: 300px;
-    padding: 20px 20px;
-    background-color: #f4f4f4;
-  }
-  @media (max-width: 640px) {
-    aside {
-      order: 2;
-      width: 100%;
-    }
+  .site-footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    border-top: 1px solid #eee;
   }
 
-  div.cover {
-  }
-  div.cover img {
-    display: block;
-    width: 100%;
-    height: 20vh;
-    object-fit: cover;
-    object-position: center 60%;
-  }
-
-  div.content {
-    padding: 20px 40px;
-  }
-  @media (max-width: 640px) {
-    div.content {
-      padding: 0 18px;
-    }
-  }
-
-  main header {
-    padding: 20px 0 20px;
-  }
-  main header h1 {
-    font-weight: 700;
-    color: #333;
-  }
-  main header h1 a {
-    display: block;
-    color: inherit;
-  }
-  main header h1 a:hover {
-    color: inherit;
-  }
-  main header h1 a span,
-  main header h1 a img {
-    display: inline-block;
-    font-size: 1.1em;
-  }
-  main header h1 a span {
-    margin-right: 0.3em;
-    margin-left: -0.1rem;
-  }
-  main header h1 a img {
-    width: 1.2em;
-    height: 1.2em;
-    margin-right: 0.2em;
-    margin-left: -0.3rem;
-    vertical-align: sub;
-  }
-  main header h1 a img.custom-icon {
-    border-radius: var(--radius);
-  }
-
-  main header div.description {
-    padding: 0.3rem 0 0.6rem;
-    font-size: 0.95rem;
-  }
-
-  main footer {
-    margin: 30px 0 10px;
+  .site-footer .copyright {
+    margin-top: 2rem;
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
-  @media (max-width: 640px) {
-    main footer {
-      margin: 0 auto 30px;
-    }
-  }
-  main footer span {
+  .site-footer .copyright span {
     color: #777;
   }
-  main footer a {
+  .site-footer .copyright a {
     color: inherit;
     text-decoration: underline;
   }
@@ -313,6 +183,10 @@ if (database.Icon && database.Icon.Type === 'file') {
     --geist-success: #690;
 
     --radius: 4px;
+
+    --content-width: 680px;
+    --link-color: #0066cc;
+    --date-color: #999;
 
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
       'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
@@ -363,11 +237,11 @@ if (database.Icon && database.Icon.Type === 'file') {
   }
 
   a {
-    color: var(--accents-1);
+    color: var(--link-color);
     text-decoration: none;
   }
   a:hover {
-    color: var(--accents-1);
+    text-decoration: underline;
   }
 
   mark {

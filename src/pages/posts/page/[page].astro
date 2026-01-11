@@ -1,21 +1,13 @@
 ---
 import {
   getPostsByPage,
-  getRankedPosts,
-  getAllTags,
   getNumberOfPages,
-  getPostsByPage,
 } from '../../../lib/notion/client.ts'
 import Layout from '../../../layouts/Layout.astro'
 import NoContents from '../../../components/NoContents.astro'
 import PostDate from '../../../components/PostDate.astro'
-import PostTags from '../../../components/PostTags.astro'
 import PostTitle from '../../../components/PostTitle.astro'
-import PostFeaturedImage from '../../../components/PostFeaturedImage.astro'
-import PostExcerpt from '../../../components/PostExcerpt.astro'
 import Pagination from '../../../components/Pagination.astro'
-import BlogPostsLink from '../../../components/BlogPostsLink.astro'
-import BlogTagsLink from '../../../components/BlogTagsLink.astro'
 import styles from '../../../styles/blog.module.css'
 
 export async function getStaticPaths() {
@@ -30,10 +22,8 @@ export async function getStaticPaths() {
 
 const { page } = Astro.params
 
-const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
+const [posts, numberOfPages] = await Promise.all([
   getPostsByPage(parseInt(page, 10)),
-  getRankedPosts(),
-  getAllTags(),
   getNumberOfPages(),
 ])
 ---
@@ -49,16 +39,9 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
         <NoContents contents={posts} />
       ) : (
         posts.map((post) => (
-          <article class={styles.postItem}>
-            <PostFeaturedImage post={post} />
-            <div class={styles.postContent}>
-              <PostTitle post={post} enableLink={true} />
-              <div class={styles.postMeta}>
-                <PostDate post={post} />
-                <PostTags post={post} enableLink={true} />
-              </div>
-              <PostExcerpt post={post} />
-            </div>
+          <article class={styles.postListItem}>
+            <PostDate post={post} />
+            <PostTitle post={post} enableLink={true} />
           </article>
         ))
       )
@@ -71,23 +54,13 @@ const [posts, rankedPosts, tags, numberOfPages] = await Promise.all([
       />
     </footer>
   </div>
-
-  <div slot="aside" class={styles.aside}>
-    <BlogPostsLink heading="おすすめ" posts={rankedPosts} />
-    <BlogTagsLink heading="カテゴリー" tags={tags} />
-  </div>
 </Layout>
 
 <style>
   .page-container {
-    margin: 0;
+    margin: 0 0 1rem;
     line-height: 1.3;
-    font-size: 1.2rem;
-    font-weight: normal;
-  }
-  @media (max-width: 640px) {
-    .page-container {
-      font-size: 1.15rem;
-    }
+    font-size: 0.9rem;
+    color: var(--date-color, #999);
   }
 </style>
