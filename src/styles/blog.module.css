@@ -13,7 +13,7 @@
 }
 
 .post :global(.post-title) {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .post :global(.post-date) {
@@ -21,7 +21,7 @@
 }
 
 .post :global(.post-tags) {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 /* シンプルリストスタイル（トップページ・一覧ページ用） */
