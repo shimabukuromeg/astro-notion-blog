@@ -77,6 +77,9 @@ const currentPostIndex = allPosts.findIndex((post) => post.Slug === slug)
 const prevPost = allPosts[currentPostIndex + 1]
 const nextPost = allPosts[currentPostIndex - 1]
 
+const isDev = import.meta.env.DEV
+const notionEditUrl = `https://www.notion.so/megumis/${post.PageId.replace(/-/g, '')}`
+
 let ogImage = ''
 if (post.FeaturedImage && post.FeaturedImage.Url) {
   ogImage = new URL(filePath(new URL(post.FeaturedImage.Url)), Astro.site)
@@ -100,7 +103,14 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 
   <div slot="main" class={styles.main}>
     <article class={styles.post}>
-      <PostTitle post={post} enableLink={false} />
+      <div class="post-header">
+        <PostTitle post={post} enableLink={false} />
+        {isDev && (
+          <a href={notionEditUrl} target="_blank" rel="noopener noreferrer" class="edit-link">
+            編集
+          </a>
+        )}
+      </div>
       <PostDate post={post} />
       <PostTags post={post} />
       <PostBody blocks={blocks} />
@@ -111,3 +121,24 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
     </article>
   </div>
 </Layout>
+
+<style>
+  .post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .edit-link {
+    font-size: 0.8rem;
+    color: #888;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .edit-link:hover {
+    color: #333;
+    border-color: #999;
+  }
+</style>
