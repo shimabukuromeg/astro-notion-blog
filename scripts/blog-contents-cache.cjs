@@ -1,9 +1,13 @@
-const { exec } = require('child_process');
+const { execFile } = require('child_process');
+const fs = require('fs');
 const { Client } = require('@notionhq/client');
 const cliProgress = require('cli-progress');
 const { PromisePool } = require('@supercharge/promise-pool');
 
-const notion = new Client({ auth: process.env.NOTION_API_SECRET });
+const notion = new Client({
+  auth: process.env.NOTION_API_SECRET,
+  timeoutMs: parseInt(process.env.NOTION_API_TIMEOUT_MS || '15000', 10),
+});
 
 const getAllPages = async () => {
   const params = {
@@ -55,7 +59,13 @@ const getAllPages = async () => {
 (async () => {
   const pages = await getAllPages();
 
-  const concurrency = parseInt(process.env.CACHE_CONCURRENCY || '1', 10);
+  const concurrency = parseInt(process.env.CACHE_CONCURRENCY || '2', 10);
+  const timeout = parseInt(process.env.CACHE_PAGE_TIMEOUT_MS || '300000', 10);
+
+  fs.mkdirSync('tmp', { recursive: true });
+  console.log(
+    `Caching ${pages.length} Notion page(s) with concurrency ${concurrency}`
+  );
 
   const progressBar = new cliProgress.SingleBar(
     { stopOnComplete: true },
@@ -63,20 +73,42 @@ const getAllPages = async () => {
   );
   progressBar.start(pages.length, 0);
 
-  await PromisePool.withConcurrency(concurrency)
+  const { errors } = await PromisePool.withConcurrency(concurrency)
     .for(pages)
     .process(async (page) => {
-      return new Promise((resolve) => {
-        const command = `NX_BRANCH=main npx nx run astro-notion-blog:_fetch-notion-blocks ${page.id} ${page.last_edited_time}`;
-        const options = { timeout: 60000 };
+      return new Promise((resolve, reject) => {
+        const args = [
+          'nx',
+          'run',
+          'astro-notion-blog:_fetch-notion-blocks',
+          page.id,
+          page.last_edited_time,
+        ];
+        const options = {
+          env: { ...process.env, NX_BRANCH: 'main' },
+          timeout,
+        };
 
-        exec(command, options, (err, stdout, stderr) => {
-          if (err) {
-            console.error(`exec error: ${err}`);
-          }
+        execFile('npx', args, options, (err) => {
           progressBar.increment();
-          return resolve();
+          if (err) {
+            reject(
+              new Error(
+                `Could not cache Notion page ${page.id}: ${err.message}`
+              )
+            );
+            return;
+          }
+          resolve();
         });
       });
     });
+
+  progressBar.stop();
+  if (errors.length > 0) {
+    throw new AggregateError(
+      errors,
+      `Failed to cache ${errors.length} Notion page(s)`
+    );
+  }
 })();

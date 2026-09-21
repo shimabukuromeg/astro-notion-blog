@@ -2,17 +2,27 @@ const fs = require('fs');
 const { setTimeout } = require('timers/promises');
 const { Client } = require('@notionhq/client');
 
-const notion = new Client({ auth: process.env.NOTION_API_SECRET });
+const notion = new Client({
+  auth: process.env.NOTION_API_SECRET,
+  timeoutMs: parseInt(process.env.NOTION_API_TIMEOUT_MS || '15000', 10),
+});
 
-const requestDuration = 300;
+// Two cache workers with this delay stay below Notion's average request limit.
+const requestDuration = parseInt(
+  process.env.CACHE_REQUEST_DELAY_MS || '700',
+  10
+);
 
-const retry = (maxRetries, fn) => {
-  return fn().catch(function (err) {
+const retry = async (maxRetries, fn) => {
+  try {
+    return await fn();
+  } catch (err) {
     if (maxRetries <= 0) {
       throw err;
     }
+    await setTimeout(requestDuration);
     return retry(maxRetries - 1, fn);
-  });
+  }
 };
 
 const retrieveAndWriteBlockChildren = async (blockId) => {
@@ -38,7 +48,7 @@ const retrieveAndWriteBlockChildren = async (blockId) => {
 
   fs.writeFileSync(`tmp/${blockId}.json`, JSON.stringify(results));
 
-  results.forEach(async (block) => {
+  for (const block of results) {
     if (
       block.type === 'synced_block' &&
       block.synced_block.synced_from &&
@@ -55,7 +65,7 @@ const retrieveAndWriteBlockChildren = async (blockId) => {
     } else if (block.has_children) {
       await retrieveAndWriteBlockChildren(block.id);
     }
-  });
+  }
 };
 
 const retrieveAndWriteBlock = async (blockId) => {

@@ -9,6 +9,7 @@ import {
   DATABASE_ID,
   NUMBER_OF_POSTS_PER_PAGE,
   REQUEST_TIMEOUT_MS,
+  NOTION_API_TIMEOUT_MS,
 } from '../../server-constants'
 import type * as responses from './responses'
 import type * as requestParams from './request-params'
@@ -57,6 +58,7 @@ import { Client, APIResponseError } from '@notionhq/client'
 
 const client = new Client({
   auth: NOTION_API_SECRET,
+  timeoutMs: NOTION_API_TIMEOUT_MS,
 })
 
 let postsCache: Post[] | null = null
@@ -82,7 +84,9 @@ export async function getAllPosts(): Promise<Post[]> {
         {
           property: 'Date',
           date: {
-            on_or_before: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
+            on_or_before: new Date(
+              new Date().getTime() + 9 * 60 * 60 * 1000
+            ).toISOString(),
           },
         },
       ],

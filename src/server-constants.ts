@@ -14,4 +14,8 @@ export const REQUEST_TIMEOUT_MS = parseInt(
   import.meta.env.REQUEST_TIMEOUT_MS || '10000',
   10
 )
+export const NOTION_API_TIMEOUT_MS = parseInt(
+  import.meta.env.NOTION_API_TIMEOUT_MS || '15000',
+  10
+)
 export const ENABLE_LIGHTBOX = import.meta.env.ENABLE_LIGHTBOX

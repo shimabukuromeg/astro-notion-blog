@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "npm run cache:fetch && npm run build:astro",
+    "build:astro": "astro build",
     "build:cached": "npm run cache:fetch && astro build",
     "preview": "astro preview",
     "astro": "astro",
