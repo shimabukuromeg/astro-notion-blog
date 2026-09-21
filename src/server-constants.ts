@@ -18,4 +18,7 @@ export const NOTION_API_TIMEOUT_MS = parseInt(
   import.meta.env.NOTION_API_TIMEOUT_MS || '15000',
   10
 )
+export const NOTION_CACHE_DIR =
+  import.meta.env.NOTION_CACHE_DIR ||
+  (import.meta.env.CF_PAGES ? 'node_modules/.astro/notion-cache' : 'tmp')
 export const ENABLE_LIGHTBOX = import.meta.env.ENABLE_LIGHTBOX

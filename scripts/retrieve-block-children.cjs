@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const { setTimeout } = require('timers/promises');
 const { Client } = require('@notionhq/client');
 
@@ -12,6 +13,13 @@ const requestDuration = parseInt(
   process.env.CACHE_REQUEST_DELAY_MS || '700',
   10
 );
+const cacheDir =
+  process.env.NOTION_CACHE_DIR ||
+  (process.env.CF_PAGES ? 'node_modules/.astro/notion-cache' : 'tmp');
+
+fs.mkdirSync(cacheDir, { recursive: true });
+
+const cachePath = (blockId) => path.join(cacheDir, `${blockId}.json`);
 
 const retry = async (maxRetries, fn) => {
   try {
@@ -46,7 +54,7 @@ const retrieveAndWriteBlockChildren = async (blockId) => {
     params['start_cursor'] = res.next_cursor;
   }
 
-  fs.writeFileSync(`tmp/${blockId}.json`, JSON.stringify(results));
+  fs.writeFileSync(cachePath(blockId), JSON.stringify(results));
 
   for (const block of results) {
     if (
@@ -77,7 +85,7 @@ const retrieveAndWriteBlock = async (blockId) => {
 
   const block = await retry(3, () => notion.blocks.retrieve(params));
 
-  fs.writeFileSync(`tmp/${blockId}.json`, JSON.stringify(block));
+  fs.writeFileSync(cachePath(blockId), JSON.stringify(block));
 
   if (block.has_children) {
     await retrieveAndWriteBlockChildren(block.id);

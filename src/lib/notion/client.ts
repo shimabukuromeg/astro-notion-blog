@@ -1,4 +1,5 @@
 import fs, { createWriteStream } from 'node:fs'
+import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import axios, { AxiosResponse } from 'axios'
 import sharp from 'sharp'
@@ -10,6 +11,7 @@ import {
   NUMBER_OF_POSTS_PER_PAGE,
   REQUEST_TIMEOUT_MS,
   NOTION_API_TIMEOUT_MS,
+  NOTION_CACHE_DIR,
 } from '../../server-constants'
 import type * as responses from './responses'
 import type * as requestParams from './request-params'
@@ -65,6 +67,8 @@ let postsCache: Post[] | null = null
 let dbCache: Database | null = null
 
 const numberOfRetry = 2
+const notionCachePath = (blockId: string) =>
+  path.join(NOTION_CACHE_DIR, `${blockId}.json`)
 
 export async function getAllPosts(): Promise<Post[]> {
   if (postsCache !== null) {
@@ -234,9 +238,10 @@ export async function getNumberOfPagesByTag(tagName: string): Promise<number> {
 
 export async function getAllBlocksByBlockId(blockId: string): Promise<Block[]> {
   let results: responses.BlockObject[] = []
+  const cachePath = notionCachePath(blockId)
 
-  if (fs.existsSync(`tmp/${blockId}.json`)) {
-    results = JSON.parse(fs.readFileSync(`tmp/${blockId}.json`, 'utf-8'))
+  if (fs.existsSync(cachePath)) {
+    results = JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
   } else {
     const params: requestParams.RetrieveBlockChildren = {
       block_id: blockId,
@@ -779,9 +784,10 @@ function _buildBlock(blockObject: responses.BlockObject): Block {
 
 async function _getTableRows(blockId: string): Promise<TableRow[]> {
   let results: responses.BlockObject[] = []
+  const cachePath = notionCachePath(blockId)
 
-  if (fs.existsSync(`tmp/${blockId}.json`)) {
-    results = JSON.parse(fs.readFileSync(`tmp/${blockId}.json`, 'utf-8'))
+  if (fs.existsSync(cachePath)) {
+    results = JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
   } else {
     const params: requestParams.RetrieveBlockChildren = {
       block_id: blockId,
@@ -844,9 +850,10 @@ async function _getTableRows(blockId: string): Promise<TableRow[]> {
 
 async function _getColumns(blockId: string): Promise<Column[]> {
   let results: responses.BlockObject[] = []
+  const cachePath = notionCachePath(blockId)
 
-  if (fs.existsSync(`tmp/${blockId}.json`)) {
-    results = JSON.parse(fs.readFileSync(`tmp/${blockId}.json`, 'utf-8'))
+  if (fs.existsSync(cachePath)) {
+    results = JSON.parse(fs.readFileSync(cachePath, 'utf-8'))
   } else {
     const params: requestParams.RetrieveBlockChildren = {
       block_id: blockId,

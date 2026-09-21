@@ -1,5 +1,6 @@
 const { execFile } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 const { Client } = require('@notionhq/client');
 const cliProgress = require('cli-progress');
 const { PromisePool } = require('@supercharge/promise-pool');
@@ -61,8 +62,11 @@ const getAllPages = async () => {
 
   const concurrency = parseInt(process.env.CACHE_CONCURRENCY || '2', 10);
   const timeout = parseInt(process.env.CACHE_PAGE_TIMEOUT_MS || '300000', 10);
+  const cacheDir =
+    process.env.NOTION_CACHE_DIR ||
+    (process.env.CF_PAGES ? 'node_modules/.astro/notion-cache' : 'tmp');
 
-  fs.mkdirSync('tmp', { recursive: true });
+  fs.mkdirSync(cacheDir, { recursive: true });
   console.log(
     `Caching ${pages.length} Notion page(s) with concurrency ${concurrency}`
   );
@@ -72,24 +76,36 @@ const getAllPages = async () => {
     cliProgress.Presets.shades_classic
   );
   progressBar.start(pages.length, 0);
+  let reused = 0;
+  let fetched = 0;
 
   const { errors } = await PromisePool.withConcurrency(concurrency)
     .for(pages)
     .process(async (page) => {
+      const cachePath = path.join(cacheDir, `${page.id}.json`);
+      const markerPath = path.join(
+        cacheDir,
+        `${page.id}.last_edited_time`
+      );
+
+      if (
+        fs.existsSync(cachePath) &&
+        fs.existsSync(markerPath) &&
+        fs.readFileSync(markerPath, 'utf8') === page.last_edited_time
+      ) {
+        reused += 1;
+        progressBar.increment();
+        return;
+      }
+
       return new Promise((resolve, reject) => {
-        const args = [
-          'nx',
-          'run',
-          'astro-notion-blog:_fetch-notion-blocks',
-          page.id,
-          page.last_edited_time,
-        ];
+        const args = ['scripts/retrieve-block-children.cjs', page.id];
         const options = {
-          env: { ...process.env, NX_BRANCH: 'main' },
+          env: { ...process.env, NOTION_CACHE_DIR: cacheDir },
           timeout,
         };
 
-        execFile('npx', args, options, (err) => {
+        execFile(process.execPath, args, options, (err) => {
           progressBar.increment();
           if (err) {
             reject(
@@ -99,12 +115,15 @@ const getAllPages = async () => {
             );
             return;
           }
+          fs.writeFileSync(markerPath, page.last_edited_time);
+          fetched += 1;
           resolve();
         });
       });
     });
 
   progressBar.stop();
+  console.log(`Notion cache complete: ${reused} reused, ${fetched} fetched`);
   if (errors.length > 0) {
     throw new AggregateError(
       errors,
