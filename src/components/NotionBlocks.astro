@@ -26,6 +26,7 @@ import NumberedListItems from './notion-blocks/NumberedListItems.astro'
 import ToDo from './notion-blocks/ToDo.astro'
 import SyncedBlock from './notion-blocks/SyncedBlock.astro'
 import Toggle from './notion-blocks/Toggle.astro'
+import Quiz from './notion-blocks/Quiz.astro'
 import File from './notion-blocks/File.astro'
 import LinkToPage from './notion-blocks/LinkToPage.astro'
 
@@ -162,6 +163,23 @@ const bookmarkURLMap = await buildURLToHTMLMap(bookmarkURLs)
       case 'synced_block':
         return <SyncedBlock block={block} headings={headings} />
       case 'toggle':
+        if (
+          block.Toggle.RichTexts.map(
+            (richText: interfaces.RichText) => richText.PlainText
+          )
+            .join('')
+            .trim()
+            .startsWith('[quiz]') &&
+          block.Toggle.Children.filter(
+            (child: interfaces.Block) => child.Type === 'to_do'
+          ).length >= 2 &&
+          block.Toggle.Children.filter(
+            (child: interfaces.Block) =>
+              child.Type === 'to_do' && child.ToDo.Checked
+          ).length === 1
+        ) {
+          return <Quiz block={block} />
+        }
         return <Toggle block={block} headings={headings} />
       case 'file':
         return <File block={block} />

@@ -1,0 +1,162 @@
+---
+import * as interfaces from '../../lib/interfaces.ts'
+
+export interface Props {
+  block: interfaces.Block
+}
+
+const { block } = Astro.props
+
+const QUIZ_PREFIX = '[quiz]'
+const plainText = (richTexts: interfaces.RichText[] = []) =>
+  richTexts.map((richText) => richText.PlainText).join('')
+
+const question = plainText(block.Toggle.RichTexts)
+  .slice(QUIZ_PREFIX.length)
+  .trim()
+const options = block.Toggle.Children.filter(
+  (child) => child.Type === 'to_do' && child.ToDo
+).map((child) => ({
+  label: plainText(child.ToDo.RichTexts),
+  isCorrect: child.ToDo.Checked,
+}))
+const explanationBlock = block.Toggle.Children.find(
+  (child) => child.Type === 'paragraph' && child.Paragraph
+)
+const explanation = explanationBlock
+  ? plainText(explanationBlock.Paragraph.RichTexts).replace(/^解説[:：]\s*/, '')
+  : ''
+---
+
+<section class="quiz" data-quiz>
+  <p class="quiz__question">{question}</p>
+  <div class="quiz__options" role="group" aria-label={question}>
+    {
+      options.map((option) => (
+        <button
+          class="quiz__option"
+          type="button"
+          data-quiz-option
+          data-correct={option.isCorrect ? 'true' : 'false'}
+          aria-expanded="false"
+        >
+          <span>{option.label}</span>
+          <span class="quiz__feedback" aria-live="polite" hidden>
+            {option.isCorrect ? '正解！' : 'もう一度考えてみましょう'}
+          </span>
+        </button>
+      ))
+    }
+  </div>
+  {
+    explanation && (
+      <p class="quiz__explanation" data-quiz-explanation hidden>
+        <span>解説</span>
+        {explanation}
+      </p>
+    )
+  }
+</section>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    if (!(target instanceof Element)) return
+
+    const option = target.closest('[data-quiz-option]')
+    if (!(option instanceof HTMLButtonElement)) return
+
+    option.setAttribute('aria-expanded', 'true')
+    const feedback = option.querySelector('.quiz__feedback')
+    if (feedback instanceof HTMLElement) feedback.hidden = false
+
+    if (option.dataset.correct === 'true') {
+      const quiz = option.closest('[data-quiz]')
+      const explanation = quiz?.querySelector('[data-quiz-explanation]')
+      if (explanation instanceof HTMLElement) explanation.hidden = false
+    }
+  })
+</script>
+
+<style>
+  .quiz {
+    margin: 1.5rem 0;
+    padding: 1.25rem;
+    border: 1px solid var(--accents-2, #e5e7eb);
+    border-radius: 0.75rem;
+    background: var(--accents-1, #fafafa);
+  }
+
+  .quiz__question {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .quiz__options {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .quiz__option {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--accents-2, #d1d5db);
+    border-radius: 0.5rem;
+    color: inherit;
+    background: var(--background, #fff);
+    font: inherit;
+    line-height: 1.6;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .quiz__option:hover,
+  .quiz__option:focus-visible {
+    border-color: #2563eb;
+    background: #eff6ff;
+    outline: none;
+  }
+
+  .quiz__option[data-correct='true'][aria-expanded='true'] {
+    border-color: #15803d;
+    background: #f0fdf4;
+  }
+
+  .quiz__option[data-correct='false'][aria-expanded='true'] {
+    border-color: #b45309;
+    background: #fffbeb;
+  }
+
+  .quiz__feedback {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 0.9rem;
+  }
+
+  .quiz__feedback[hidden],
+  .quiz__explanation[hidden] {
+    display: none;
+  }
+
+  .quiz__explanation {
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--accents-2, #e5e7eb);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .quiz__explanation > span {
+    display: block;
+    color: var(--accents-5, #4b5563);
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 640px) {
+    .quiz {
+      padding: 1rem;
+    }
+  }
+</style>
