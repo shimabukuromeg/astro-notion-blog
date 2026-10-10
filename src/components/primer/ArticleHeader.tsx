@@ -56,7 +56,7 @@ export default function ArticleHeader({
         {excerpt && <p className="article-deck">{excerpt}</p>}
         <div className="article-meta">
           <time dateTime={date}>{date}</time>
-          <ArticleShare title={title} url={articleUrl} />
+          <ArticleShare title={title} url={articleUrl} variant="subtle" />
           {editHref && (
             <Button
               as="a"

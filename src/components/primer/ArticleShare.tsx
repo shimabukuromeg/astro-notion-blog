@@ -3,6 +3,7 @@ import { Button } from '@primer/react-brand';
 interface Props {
   title: string;
   url: string;
+  variant?: 'secondary' | 'subtle';
 }
 
 // Original artwork: https://about.x.com/content/dam/about-twitter/x/brand-toolkit/x-logo.zip
@@ -21,7 +22,7 @@ function XLogo() {
   );
 }
 
-export default function ArticleShare({ title, url }: Props) {
+export default function ArticleShare({ title, url, variant = 'secondary' }: Props) {
   const shareUrl = new URL('https://x.com/intent/tweet');
   shareUrl.searchParams.set('text', title);
   shareUrl.searchParams.set('url', url);
@@ -32,12 +33,13 @@ export default function ArticleShare({ title, url }: Props) {
       href={shareUrl.toString()}
       target="_blank"
       rel="noopener noreferrer"
+      variant={variant}
       size="small"
       hasArrow={false}
       leadingVisual={<XLogo />}
       aria-label="この記事をXでシェア（新しいタブで開く）"
     >
-      Xでシェア
+      シェア
     </Button>
   );
 }
