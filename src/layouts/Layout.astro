@@ -1,15 +1,17 @@
 ---
 import { SEO } from 'astro-seo';
 import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants.ts'
-import { getDatabase, getAllTags } from '../lib/notion/client.ts'
-import { getNavLink, getStaticFilePath } from '../lib/blog-helpers.ts'
+import { getDatabase, getAllTags, getAllPosts } from '../lib/notion/client.ts'
+import { getNavLink, getStaticFilePath, getTagLink } from '../lib/blog-helpers.ts'
 import '../styles/syntax-coloring.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
-import SearchModal from '../components/SearchModal.astro'
-import SearchButton from '../components/SearchButton.astro'
-import BlogTagsLink from '../components/BlogTagsLink.astro'
+import PrimerShell from '../components/primer/PrimerShell'
+import { toListPost } from '../lib/primer-helpers'
+import '../styles/primer-blog.css'
+import '../styles/notion-color.css'
 
 export interface Props {
+  currentTag?: string
   title: string
   description: string
   path: string
@@ -30,36 +32,46 @@ export type OpenGraph = {
 
 const database = await getDatabase()
 const tags = await getAllTags()
+const allPosts = await getAllPosts()
 
 const {
+  currentTag = '',
   title = '',
   description = '',
   path = '/',
-  ogImage = '',
   openGraph,
 } = Astro.props;
 
 const siteTitle = title ? `${title} - ${database.Title}` : database.Title
+const profileImageSrc = getStaticFilePath('/favicon.ico')
 const siteDescription = description ? description : database.Description
 const siteURL = new URL(getNavLink(path), Astro.site).toString()
 const siteOGImage = new URL(
-  getStaticFilePath('/default-og-image.png'),
+  getStaticFilePath('/og.png'),
   Astro.site
 )
 ---
 
 <!DOCTYPE html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html lang="ja" data-color-mode="light" data-light-theme="light" data-dark-theme="dark" prefix="og: https://ogp.me/ns#">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline>
+      try {
+        const preference = localStorage.getItem('blog-color-mode');
+        document.documentElement.dataset.colorMode = preference === 'dark' || (!preference && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      } catch { /* Use the server-rendered light theme when storage is unavailable. */ }
+    </script>
     <meta name="robots" content="max-image-preview:large" />
     <meta charset="UTF-8" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="icon" href={profileImageSrc} type="image/jpeg" />
     <meta name="google-site-verification" content="7MyJOp3wAa95XBP7-6eBX7UwA9I-r46zjq0_wIh1SxE" />
     <SEO
       charset="UTF-8"
       title={siteTitle}
       description={siteDescription}
+      canonical={siteURL}
       openGraph={openGraph || {
         basic: {
           title: `${siteTitle}`,
@@ -84,28 +96,20 @@ const siteOGImage = new URL(
   </head>
   <body>
     <GoogleAnalytics trackingId={PUBLIC_GA_TRACKING_ID} />
-    <div class="container">
-      <header class="site-header">
-        <nav>
-          <a href={getNavLink('/')} class="site-title">{database.Title}</a>
-        </nav>
-        <SearchButton />
-      </header>
-
-      <main>
-        <slot name="main" />
-      </main>
-
-      <footer class="site-footer">
-        <BlogTagsLink heading="カテゴリー" tags={tags} />
-        <div class="copyright">
-          <span>Powered by&nbsp;</span>
-          <a href="https://github.com/otoyo/astro-notion-blog">astro-notion-blog</a>
-        </div>
-      </footer>
-    </div>
-
-    <SearchModal />
+    <PrimerShell
+      title={database.Title}
+      profileImageSrc={profileImageSrc}
+      description={database.Description}
+      homeHref={getNavLink('/')}
+      feedHref={getNavLink('/feed')}
+      currentTag={currentTag}
+      isIndex={!path.startsWith('/posts/') || path.startsWith('/posts/page/') || path.startsWith('/posts/tag/')}
+      tags={tags.map(tag => ({name: tag.name, href: getTagLink(tag.name), count: allPosts.filter(post => post.Tags.some(t => t.name === tag.name)).length})).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ja'))}
+      posts={allPosts.map(post => ({...toListPost(post), tags: post.Tags.map(tag => tag.name)}))}
+      client:load
+    >
+      <slot name="main" />
+    </PrimerShell>
     {
       ENABLE_LIGHTBOX && (
         <script src={getStaticFilePath('/scripts/fslightbox.js')} />
@@ -113,228 +117,3 @@ const siteOGImage = new URL(
     }
   </body>
 </html>
-
-<style>
-  .container {
-    min-height: 100vh;
-    max-width: var(--content-width);
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  .site-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem 0;
-  }
-
-  .site-header nav {
-    display: flex;
-    gap: 1.5rem;
-  }
-
-  .site-header .site-title {
-    font-weight: 400;
-    color: var(--fg);
-    font-size: 1rem;
-  }
-  .site-header .site-title:hover {
-    text-decoration: underline;
-  }
-
-  main {
-    padding: 1rem 0;
-  }
-
-  .site-footer {
-    margin-top: 4rem;
-    padding: 2rem 0;
-    border-top: 1px solid #eee;
-  }
-
-  .site-footer .copyright {
-    margin-top: 2rem;
-    text-align: center;
-    font-size: 0.8rem;
-  }
-  .site-footer .copyright span {
-    color: #777;
-  }
-  .site-footer .copyright a {
-    color: inherit;
-    text-decoration: underline;
-  }
-</style>
-
-<style is:global>
-  :root {
-    --gap-quarter: 0.25rem;
-    --gap-half: 0.5rem;
-    --gap: 1rem;
-    --gap-double: 2rem;
-
-    --bg: #fff;
-    --fg: #333;
-    --accents-1: #666;
-    --accents-2: #666;
-    --accents-3: #666;
-    --geist-foreground: #000;
-    --geist-success: #690;
-
-    --radius: 4px;
-
-    --content-width: 680px;
-    --link-color: #0066cc;
-    --date-color: #999;
-
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
-      'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
-      'Helvetica Neue', sans-serif;
-    --font-mono: SFMono-Regular, Menlo, Consolas, 'PT Mono', 'Liberation Mono',
-      Courier, monospace;
-  }
-
-  * {
-    box-sizing: border-box;
-    word-break: break-word;
-  }
-
-  html,
-  body {
-    padding: 0;
-    margin: 0;
-    font-size: 16px;
-  }
-
-  body {
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-      Helvetica, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
-      'Hiragino Sans GB', メイリオ, Meiryo, 'Apple Color Emoji', Arial,
-      sans-serif, 'Segoe UI Emoji', 'Segoe UI Symbol';
-
-    /*background-image: radial-gradient(#ddd 1px, transparent 1px),
-      radial-gradient(#ddd 1px, transparent 1px);*/
-    background-position: 0 0, 25px 25px;
-    background-attachment: fixed;
-    background-size: 50px 50px;
-
-    /* Hack */
-    overflow-x: hidden;
-
-    -webkit-font-smoothing: antialiased;
-    -webkit-text-size-adjust: 100%;
-  }
-
-  figure {
-    margin: 0;
-    font-size: 0.85rem;
-    color: #999;
-    line-height: 1.8rem;
-  }
-
-  a {
-    color: var(--link-color);
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-
-  mark {
-    padding: var(--gap-quarter);
-    border-radius: var(--radius);
-    background: rgba(247, 212, 255, 0.8);
-  }
-
-  h1 {
-    margin: 0;
-    color: var(--fg);
-    font-size: 2rem;
-    font-weight: 700;
-  }
-
-  @media (max-width: 640px) {
-    h1 {
-      font-size: 1.6rem;
-    }
-  }
-
-  ol {
-    color: #222;
-    font-weight: 400;
-    font-size: 0.9rem;
-    line-height: 1.8rem;
-  }
-  p,
-  ul {
-    color: #222;
-    font-weight: 400;
-    font-size: 1rem;
-    line-height: 1.8rem;
-  }
-  ul,
-  ol {
-    margin: 0;
-    padding-inline-start: 1.5rem;
-  }
-  pre {
-    margin: 0;
-    white-space: pre;
-    tab-size: 2;
-  }
-  pre :global(code) {
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  hr {
-    display: block;
-    height: 1px;
-    border: 0;
-    margin: 0.3rem 0;
-    background-color: #333;
-  }
-
-  code {
-    font-size: 0.9rem;
-    background: rgba(135, 131, 120, 0.15);
-    color: #eb5757;
-    padding: 0.25rem;
-    border-radius: var(--radius);
-    font-family: var(--font-mono);
-  }
-
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-    border-collapse: collapse;
-  }
-
-  table tr {
-    vertical-align: top;
-  }
-
-  table th {
-    font-weight: 600;
-    background-color: #f4f4f4;
-  }
-
-  table td,
-  table th {
-    font-size: 0.9rem;
-    border: 1px solid #e4e4e4;
-    padding: 0.5rem 1rem;
-    text-align: left;
-    line-height: 1.2rem;
-  }
-  table td::after {
-    content: '';
-    display: inline-block;
-    min-height: 0.9rem;
-  }
-</style>

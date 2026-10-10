@@ -41,24 +41,24 @@ const { block, headings } = Astro.props
 <style>
   .callout {
     display: flex;
-    margin: 0.4rem auto;
-    padding: 16px 12px;
+    margin: var(--base-size-6) auto;
+    padding: var(--base-size-16) var(--base-size-12);
     width: 100%;
-    font-size: 1rem;
-    font-weight: 400;
-    line-height: 1.6rem;
-    border-radius: 3px;
-    border-width: 1px;
+    font-size: var(--text-body-size-large);
+    font-weight: var(--base-text-weight-normal);
+    line-height: var(--base-text-lineHeight-relaxed);
+    border-radius: var(--borderRadius-medium);
+    border-width: var(--borderWidth-thin);
     border-style: solid;
     border-color: transparent;
-    background: rgba(235, 236, 237, 0.6);
+    background: var(--bgColor-muted);
   }
   .callout > div {
     margin: 0;
-    line-height: 1.5rem;
+    line-height: var(--base-text-lineHeight-relaxed);
   }
   .callout > div.icon {
-    margin-right: 0.7rem;
+    margin-right: var(--base-size-12);
   }
   .callout > div.icon > img {
     width: 1.2rem;

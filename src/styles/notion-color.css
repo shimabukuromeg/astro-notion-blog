@@ -1,104 +1,113 @@
+/* Preserve Notion color annotations with Primer theme-aware display tokens. */
 .gray,
 .gray:hover {
-  color: rgba(120, 119, 116, 1);
+  color: var(--display-gray-fgColor);
+}
+.gray-background {
+  background: var(--display-gray-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.gray {
+  color: var(--display-gray-fgColor);
+  background: var(--display-gray-bgColor-muted) !important;
 }
 .brown,
 .brown:hover {
-  color: rgba(159, 107, 83, 1);
+  color: var(--display-brown-fgColor);
+}
+.brown-background {
+  background: var(--display-brown-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.brown {
+  color: var(--display-brown-fgColor);
+  background: var(--display-brown-bgColor-muted) !important;
 }
 .orange,
 .orange:hover {
-  color: rgba(217, 115, 13, 1);
+  color: var(--display-orange-fgColor);
+}
+.orange-background {
+  background: var(--display-orange-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.orange {
+  color: var(--display-orange-fgColor);
+  background: var(--display-orange-bgColor-muted) !important;
 }
 .yellow,
 .yellow:hover {
-  color: rgba(203, 145, 47, 1);
+  color: var(--display-yellow-fgColor);
+}
+.yellow-background {
+  background: var(--display-yellow-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.yellow {
+  color: var(--display-yellow-fgColor);
+  background: var(--display-yellow-bgColor-muted) !important;
 }
 .green,
 .green:hover {
-  color: rgba(68, 131, 97, 1);
+  color: var(--display-green-fgColor);
+}
+.green-background {
+  background: var(--display-green-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.green {
+  color: var(--display-green-fgColor);
+  background: var(--display-green-bgColor-muted) !important;
 }
 .blue,
 .blue:hover {
-  color: rgba(51, 126, 169, 1);
+  color: var(--display-blue-fgColor);
+}
+.blue-background {
+  background: var(--display-blue-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.blue {
+  color: var(--display-blue-fgColor);
+  background: var(--display-blue-bgColor-muted) !important;
 }
 .purple,
 .purple:hover {
-  color: rgba(144, 101, 176, 1);
+  color: var(--display-purple-fgColor);
+}
+.purple-background {
+  background: var(--display-purple-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.purple {
+  color: var(--display-purple-fgColor);
+  background: var(--display-purple-bgColor-muted) !important;
 }
 .pink,
 .pink:hover {
-  color: rgba(193, 76, 138, 1);
+  color: var(--display-pink-fgColor);
+}
+.pink-background {
+  background: var(--display-pink-bgColor-muted) !important;
+  color: var(--fgColor-default);
+}
+.tag.pink {
+  color: var(--display-pink-fgColor);
+  background: var(--display-pink-bgColor-muted) !important;
 }
 .red,
 .red:hover {
-  color: rgba(212, 76, 71, 1);
-}
-.gray-background {
-  background: rgba(241, 241, 239, 1) !important;
-}
-.brown-background {
-  background: rgba(244, 238, 238, 1) !important;
-}
-.orange-background {
-  background: rgba(251, 236, 221, 1) !important;
-}
-.yellow-background {
-  background: rgba(251, 243, 219, 1) !important;
-}
-.green-background {
-  background: rgba(237, 243, 236, 1) !important;
-}
-.blue-background {
-  background: rgba(231, 243, 248, 1) !important;
-}
-.purple-background {
-  background: rgba(244, 240, 247, 0.8) !important;
-}
-.pink-background {
-  background: rgba(249, 238, 243, 0.8) !important;
+  color: var(--display-red-fgColor);
 }
 .red-background {
-  background: rgba(253, 235, 236, 1) !important;
-}
-
-.tag.light-gray {
-  color: rgb(28, 56, 41);
-  background: rgba(227, 226, 224, 0.5) !important;
-}
-.tag.gray {
-  color: rgb(28, 56, 41);
-  background: rgb(227, 226, 224) !important;
-}
-.tag.brown {
-  color: rgb(28, 56, 41);
-  background: rgb(238, 224, 218) !important;
-}
-.tag.orange {
-  color: rgb(28, 56, 41);
-  background: rgb(250, 222, 201) !important;
-}
-.tag.yellow {
-  color: rgb(28, 56, 41);
-  background: rgb(253, 236, 200) !important;
-}
-.tag.green {
-  color: rgb(28, 56, 41);
-  background: rgb(219, 237, 219) !important;
-}
-.tag.blue {
-  color: rgb(28, 56, 41);
-  background: rgb(211, 229, 239) !important;
-}
-.tag.purple {
-  color: rgb(28, 56, 41);
-  background: rgb(232, 222, 238) !important;
-}
-.tag.pink {
-  color: rgb(28, 56, 41);
-  background: rgb(245, 224, 233) !important;
+  background: var(--display-red-bgColor-muted) !important;
+  color: var(--fgColor-default);
 }
 .tag.red {
-  color: rgb(28, 56, 41);
-  background: rgb(255, 226, 221) !important;
+  color: var(--display-red-fgColor);
+  background: var(--display-red-bgColor-muted) !important;
+}
+.tag.light-gray {
+  color: var(--fgColor-muted);
+  background: var(--bgColor-muted) !important;
 }

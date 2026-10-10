@@ -26,5 +26,15 @@ const getSite = function () {
 export default defineConfig({
   site: getSite(),
   base: BASE_PATH,
+  vite: {
+    optimizeDeps: { include: ['@primer/react', '@primer/react/next', '@primer/react-brand'] },
+    ssr: { noExternal: ['@primer/react'] },
+    // Brand 0.57 ships UMD: Node handles dev SSR; Rollup converts it for builds.
+    plugins: [{
+      name: 'primer-brand-build-interop',
+      apply: 'build',
+      config: () => ({ ssr: { noExternal: ['@primer/react-brand'] } })
+    }]
+  },
   integrations: [CoverImageDownloader(), CustomIconDownloader(), FeaturedImageDownloader(), PublicNotionCopier(), react()]
 });

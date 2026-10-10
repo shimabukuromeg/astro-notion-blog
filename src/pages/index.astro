@@ -5,35 +5,16 @@ import {
   getNumberOfPages,
 } from '../lib/notion/client.ts'
 import Layout from '../layouts/Layout.astro'
-import NoContents from '../components/NoContents.astro'
-import PostDate from '../components/PostDate.astro'
-import PostTitle from '../components/PostTitle.astro'
-import Pagination from '../components/Pagination.astro'
-import styles from '../styles/blog.module.css'
 
 const [posts, numberOfPages] = await Promise.all([
   getPosts(NUMBER_OF_POSTS_PER_PAGE),
   getNumberOfPages(),
 ])
+import PostIndex from '../components/PostIndex.astro'
 ---
 
 <Layout>
-  <div slot="main" class={styles.main}>
-    {
-      posts.length === 0 ? (
-        <NoContents contents={posts} />
-      ) : (
-        posts.map((post) => (
-          <article class={styles.postListItem}>
-            <PostDate post={post} />
-            <PostTitle post={post} enableLink={true} />
-          </article>
-        ))
-      )
-    }
-
-    <footer>
-      <Pagination currentPage={1} numberOfPages={numberOfPages} />
-    </footer>
+  <div slot="main">
+    <PostIndex posts={posts} currentPage={1} numberOfPages={numberOfPages} />
   </div>
 </Layout>

@@ -1,6 +1,6 @@
 ---
 import * as interfaces from '../../lib/interfaces.ts'
-import { buildHeadingId } from '../../lib/blog-helpers.ts'
+import { getHeadingAnchor } from '../../lib/primer-helpers'
 import { snakeToKebab } from '../../lib/style-helpers.ts'
 import '../../styles/notion-color.css'
 
@@ -27,7 +27,7 @@ const { block, headings } = Astro.props
 
       return (
         <a
-          href={`#${buildHeadingId(heading)}`}
+          href={`#${encodeURIComponent(getHeadingAnchor(headingBlock, headings))}`}
           class={`table-of-contents ${snakeToKebab(
             block.TableOfContents.Color
           )} ${indentClass}`}
@@ -46,18 +46,18 @@ const { block, headings } = Astro.props
   }
   .table-of-contents > a {
     display: block;
-    line-height: 1.8rem;
-    font-size: 0.9rem;
-    font-weight: 500;
+    line-height: var(--base-text-lineHeight-relaxed);
+    font-size: var(--text-body-size-medium);
+    font-weight: var(--base-text-weight-medium);
     text-decoration: underline;
   }
   .table-of-contents > a:hover {
-    background: rgba(241, 241, 239, 1) !important;
+    background: var(--bgColor-muted) !important;
   }
   .table-of-contents > a.indent-1 {
-    padding-left: 1.5rem;
+    padding-left: var(--base-size-24);
   }
   .table-of-contents > a.indent-2 {
-    padding-left: 3rem;
+    padding-left: var(--base-size-48);
   }
 </style>

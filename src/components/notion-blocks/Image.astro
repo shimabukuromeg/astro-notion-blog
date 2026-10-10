@@ -1,5 +1,7 @@
 ---
-import { ENABLE_LIGHTBOX } from '../../server-constants.ts'
+import { ENABLE_LIGHTBOX, BASE_PATH } from '../../server-constants.ts'
+import sharp from 'sharp'
+import { resolve, sep } from 'node:path'
 import * as interfaces from '../../lib/interfaces'
 import { filePath } from '../../lib/blog-helpers'
 import Caption from './Caption.astro'
@@ -20,6 +22,25 @@ if (block.Image.External) {
 // キャプションにリンクがある場合、画像をそのリンクで囲む
 const caption = block.Image?.Caption?.[0]
 const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
+const imageAlt = block.Image.Caption?.map(text => text.PlainText).join('') || '記事内の参考画像'
+let width: number | undefined
+let height: number | undefined
+// Reserve the downloaded image's actual space before it loads.
+if (block.Image.File && image) {
+  const publicRoot = resolve('public')
+  const relativePath = image.slice(BASE_PATH.replace(/\/$/, '').length)
+  const localPath = resolve(publicRoot, `.${relativePath}`)
+  if (localPath.startsWith(`${publicRoot}${sep}`)) {
+    try {
+      const metadata = await sharp(localPath).metadata()
+      const rotated = metadata.orientation && metadata.orientation >= 5
+      width = rotated ? metadata.height : metadata.width
+      height = rotated ? metadata.width : metadata.height
+    } catch { /* External or missing images still render normally. */ }
+  }
+}
+const displayWidth = width && height ? Math.min(width, (width * 400) / height) : undefined;
+const imageStyle = width && height ? `width: ${displayWidth}px; aspect-ratio: ${width} / ${height};` : undefined;
 ---
 
 <figure class="image">
@@ -29,14 +50,14 @@ const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
         <div>
           {captionLink ? (
             <a href={captionLink} target="_blank" rel="noopener noreferrer">
-              <img src={image} alt="Image in a image block" loading="lazy" />
+              <img src={image} alt={imageAlt} width={width} height={height} style={imageStyle} loading="lazy" />
             </a>
           ) : ENABLE_LIGHTBOX ? (
             <a data-fslightbox href={image} data-type="image">
-              <img src={image} alt="Image in a image block" loading="lazy" />
+              <img src={image} alt={imageAlt} width={width} height={height} style={imageStyle} loading="lazy" />
             </a>
           ) : (
-            <img src={image} alt="Image in a image block" loading="lazy" />
+            <img src={image} alt={imageAlt} width={width} height={height} style={imageStyle} loading="lazy" />
           )}
         </div>
         {!captionLink && block.Image?.Caption && <Caption richTexts={block.Image.Caption} />}
@@ -48,7 +69,7 @@ const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
 <style>
   .image {
     display: flex;
-    margin: 0.2rem auto 0;
+    margin: var(--base-size-4) auto 0;
   }
   .image > div {
     margin: 0 auto;
@@ -59,6 +80,8 @@ const captionLink = caption?.Href || caption?.Text?.Link?.Url || ''
     display: block;
     max-width: 100%;
     max-height: 400px;
+    width: auto;
+    height: auto;
     object-fit: contain;
   }
 </style>

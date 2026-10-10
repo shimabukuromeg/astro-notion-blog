@@ -52,8 +52,8 @@ if (pageId) {
 <style>
   a.link {
     display: inline-flex;
-    font-weight: 600;
-    gap: 4px;
+    font-weight: var(--base-text-weight-semibold);
+    gap: var(--base-size-4);
   }
   span.icon {
     height: fit-content;
@@ -77,11 +77,11 @@ if (pageId) {
   }
   span.text {
     color: var(--fg);
-    font-weight: 500;
+    font-weight: var(--base-text-weight-medium);
     text-decoration: underline;
   }
   span.text.not-found {
-    font-weight: normal;
+    font-weight: var(--base-text-weight-normal);
     text-decoration: none;
   }
 </style>

@@ -1,6 +1,7 @@
 ---
 import * as interfaces from '../../lib/interfaces.ts'
-import { buildHeadingId } from '../../lib/blog-helpers.ts'
+import { getHeadingAnchor } from '../../lib/primer-helpers'
+import { LinkIcon } from '@primer/octicons-react'
 import RichText from './RichText.astro'
 import NotionBlocks from '../NotionBlocks.astro'
 
@@ -8,84 +9,23 @@ export interface Props {
   block: interfaces.Block
   headings: interfaces.Block[]
 }
-
 const { block, headings } = Astro.props
-
-const id = buildHeadingId(block.Heading3)
+const heading = block.Heading3
+const id = getHeadingAnchor(block, headings)
+const firstLevel = headings.length ? Math.min(...headings.map(item => Number(item.Type.slice(-1)))) : 1
+const Tag = firstLevel >= 3 ? 'h2' : firstLevel === 2 ? 'h3' : 'h4'
 ---
 
-{
-  block.Heading3.IsToggleable ? (
-    <details class="toggle">
-      <summary>
-        <a href={`#${id}`} id={id}>
-          <h5>
-            {block.Heading3.RichTexts.map((richText: interfaces.RichText) => (
-              <RichText richText={richText} />
-            ))}
-          </h5>
-        </a>
-      </summary>
-      <div>
-        {block.Heading3.Children && (
-          <NotionBlocks blocks={block.Heading3.Children} headings={headings} />
-        )}
-      </div>
-    </details>
-  ) : (
-    <a href={`#${id}`} id={id}>
-      <h5>
-        {block.Heading3.RichTexts.map((richText: interfaces.RichText) => (
-          <RichText richText={richText} />
-        ))}
-      </h5>
-    </a>
-  )
-}
-
-<style>
-  h5 {
-    margin: 1em 0 0.3em;
-    color: var(--fg);
-    font-size: 1.25rem;
-  }
-  @media (max-width: 640px) {
-    h5 {
-      font-size: 1.1rem;
-    }
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-  a:hover h5 {
-    text-decoration: underline;
-    text-decoration-color: #ccc;
-  }
-
-  .toggle {
-    margin: 1.2rem 0 0;
-  }
-  @media (max-width: 640px) {
-    .toggle {
-      margin: 1.1rem 0 0;
-    }
-  }
-
-  .toggle > summary {
-    cursor: pointer;
-  }
-
-  .toggle > summary > a {
-    display: inline;
-  }
-
-  .toggle > summary > a > h5 {
-    display: inline;
-  }
-
-  .toggle > div {
-    margin-left: 1em;
-  }
-</style>
+{heading.IsToggleable ? (
+  <details class="toggle heading-toggle">
+    <summary>
+      <Tag id={id}>{heading.RichTexts.map((richText: interfaces.RichText) => <RichText richText={richText} />)}</Tag>
+    </summary>
+    <div>{heading.Children && <NotionBlocks blocks={heading.Children} headings={headings} />}</div>
+  </details>
+) : (
+  <Tag id={id} class="linked-heading">
+    {heading.RichTexts.map((richText: interfaces.RichText) => <RichText richText={richText} />)}
+    <a class="heading-permalink" href={`#${encodeURIComponent(id)}`} aria-label="この見出しへのリンク"><LinkIcon size={16} /></a>
+  </Tag>
+)}

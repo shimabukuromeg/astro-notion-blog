@@ -3,6 +3,8 @@ import * as interfaces from '../../lib/interfaces.ts'
 import { snakeToKebab } from '../../lib/style-helpers.ts'
 import RichText from './RichText.astro'
 import NotionBlocks from '../NotionBlocks.astro'
+import QuizCard from '../primer/QuizCard'
+import { parseQuiz } from '../../lib/quiz-helpers'
 import '../../styles/notion-color.css'
 
 export interface Props {
@@ -11,9 +13,22 @@ export interface Props {
 }
 
 const { block, headings } = Astro.props
+const parsedQuiz = parseQuiz(block)
 ---
 
-<details class={`toggle ${snakeToKebab(block.Toggle.Color)}`}>
+{parsedQuiz ? <>
+  <QuizCard {...parsedQuiz.quiz} client:visible>
+    <NotionBlocks blocks={parsedQuiz.explanation} headings={headings} />
+  </QuizCard>
+  <noscript>
+    <style is:inline>.quiz-card { display: none; }</style>
+    <details class="quiz-fallback">
+      <summary>{parsedQuiz.quiz.title}</summary>
+      <ul>{parsedQuiz.quiz.choices.map(choice => <li>{choice.text}{choice.correct && <strong>（正解）</strong>}</li>)}</ul>
+      <NotionBlocks blocks={parsedQuiz.explanation} headings={headings} />
+    </details>
+  </noscript>
+</> : <details class={`toggle ${snakeToKebab(block.Toggle.Color)}`}>
   <summary>
     {
       block.Toggle.RichTexts.map((richText: interfaces.RichText) => (
@@ -24,11 +39,11 @@ const { block, headings } = Astro.props
   <div>
     <NotionBlocks blocks={block.Toggle.Children} headings={headings} />
   </div>
-</details>
+</details>}
 
 <style>
   .toggle {
-    padding: 0.4rem;
+    padding: var(--base-size-8);
   }
 
   .toggle > summary {
@@ -40,6 +55,6 @@ const { block, headings } = Astro.props
   }
 
   .toggle > div {
-    margin-left: 1em;
+    margin-left: var(--base-size-16);
   }
 </style>
