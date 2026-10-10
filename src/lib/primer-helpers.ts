@@ -8,6 +8,7 @@ import {
   filePath,
 } from './blog-helpers'
 import type { TocEntry } from '../components/primer/ArticleToc'
+import { getDisplayFormat, getTaxonomyLink } from './taxonomy'
 
 const normalizedText = (text: string) =>
   text.normalize('NFKC').replace(/\s+/g, '')
@@ -23,10 +24,27 @@ export const toListPost = (post: Post) => ({
     normalizedText(post.Excerpt) === normalizedText(post.Title)
       ? ''
       : post.Excerpt,
-  tags: post.Tags.map((tag) => ({
-    name: tag.name,
-    href: getTagLink(tag.name),
+  tags: post.Category
+    ? [
+        {
+          name: post.Category.name,
+          href: getTaxonomyLink('category', post.Category.name),
+        },
+        ...(post.Format && getDisplayFormat(post)
+          ? [
+              {
+                name: post.Format.name,
+                href: getTaxonomyLink('format', post.Format.name),
+              },
+            ]
+          : []),
+      ]
+    : post.Tags.map((tag) => ({ name: tag.name, href: getTagLink(tag.name) })),
+  topics: post.Topics.map((topic) => ({
+    name: topic.name,
+    href: getTaxonomyLink('topic', topic.name),
   })),
+  format: post.Format?.name,
 })
 
 export const pageLinks = (count: number, tag = '') =>

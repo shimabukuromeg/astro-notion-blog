@@ -13,6 +13,7 @@ export interface ListPost {
   href: string;
   excerpt: string;
   image?: string;
+  format?: string;
   tags: { name: string; href: string }[];
 }
 interface Props {
@@ -26,6 +27,7 @@ interface Props {
     count: number;
   }[];
   tag?: string;
+  kindLabel?: string;
   homeHref: string;
   currentPage: number;
   pageLinks: string[];
@@ -41,13 +43,17 @@ function ArticleVisual({
   priority?: boolean;
 }) {
   const topic = post.tags[0]?.name || 'Notes';
-  const Icon = post.tags.some((tag) => tag.name === '本')
-    ? BookIcon
-    : post.tags.some((tag) => tag.name === 'EM')
-      ? PeopleIcon
-      : post.tags.some((tag) => /技術|GPT|AI|開発/.test(tag.name))
-        ? CodeIcon
-        : NoteIcon;
+  const Icon =
+    post.format === '読書メモ' ||
+    post.tags.some((tag) => tag.name === '本' || tag.name === '本の感想')
+      ? BookIcon
+      : post.tags.some(
+            (tag) => tag.name === 'EM' || tag.name === '組織・マネジメント'
+          )
+        ? PeopleIcon
+        : post.tags.some((tag) => /技術|GPT|AI|開発/.test(tag.name))
+          ? CodeIcon
+          : NoteIcon;
   return (
     <a
       href={post.href}
@@ -138,6 +144,7 @@ export default function PostList({
   total,
   topics,
   tag,
+  kindLabel,
   homeHref,
   currentPage,
   pageLinks,
@@ -150,12 +157,19 @@ export default function PostList({
     <div className="post-index">
       <header className={isHome ? 'editorial-intro' : 'category-intro'}>
         {!isHome && <InlineLink href={homeHref}>すべての記事へ</InlineLink>}
+        {tag && kindLabel && (
+          <Text as="p" size="100" variant="muted">
+            {kindLabel}
+          </Text>
+        )}
         <Heading as="h1" size={isHome ? '6' : '3'}>
           {tag || 'すべての記事'}
         </Heading>
         <Text as="p" size="100" variant="muted">
           {tag
-            ? `「${tag}」について書いた記事をまとめています。`
+            ? kindLabel === '記事形式'
+              ? `「${tag}」の形式で書いた記事をまとめています。`
+              : `「${tag}」について書いた記事をまとめています。`
             : '読書、仕事、日々の気づき。試したことと考えたことを書き残しています。'}
         </Text>
       </header>

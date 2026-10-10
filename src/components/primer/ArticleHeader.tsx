@@ -12,6 +12,7 @@ interface Props {
   excerpt: string;
   homeHref: string;
   tags: { name: string; href: string }[];
+  topics?: { name: string; href: string }[];
   editHref?: string;
   headingId?: string;
 }
@@ -20,6 +21,7 @@ export default function ArticleHeader({
   date,
   excerpt,
   tags,
+  topics = [],
   homeHref,
   editHref,
   headingId,
@@ -64,6 +66,16 @@ export default function ArticleHeader({
             </Button>
           )}
         </div>
+        {topics.length > 0 && (
+          <nav className="article-tags" aria-label="この記事のトピック">
+            <span>トピック</span>
+            {topics.map((topic) => (
+              <Link key={topic.name} href={topic.href} className="tag-link">
+                {topic.name}
+              </Link>
+            ))}
+          </nav>
+        )}
       </header>
     </>
   );

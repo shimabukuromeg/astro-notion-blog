@@ -516,6 +516,15 @@ a {
   max-height: 50vh;
   overflow: auto;
 }
+.taxonomy-format-navigation {
+  margin-top: var(--base-size-24);
+}
+.taxonomy-format-navigation > p {
+  margin: 0 0 var(--base-size-8);
+  color: var(--fgColor-muted);
+  font-size: var(--text-body-size-small);
+  font-weight: var(--base-text-weight-semibold);
+}
 .category-empty,
 .search-count,
 .empty-search {
@@ -572,6 +581,10 @@ a {
   margin-bottom: var(--base-size-20);
   font-size: var(--brand-text-size-100);
   font-weight: var(--base-text-weight-semibold);
+}
+.article-header nav.article-tags {
+  margin-top: var(--base-size-20);
+  margin-bottom: 0;
 }
 .article-deck {
   color: var(--brand-color-text-muted);

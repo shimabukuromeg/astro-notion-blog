@@ -7,6 +7,7 @@ import {
 } from '../../lib/notion/client'
 import { getEditorialImage } from '../../lib/editorial-image'
 import { getDateStr } from '../../lib/blog-helpers'
+import { getDisplayFormat } from '../../lib/taxonomy'
 
 export async function getStaticPaths() {
   const posts = await getAllPosts()
@@ -23,9 +24,11 @@ export async function GET({ params }: APIContext) {
   const body = await getOgImage({
     title: post.Title,
     author: database.Title,
-    category: post.Tags.map((tag) => tag.name)
-      .slice(0, 2)
-      .join(' · '),
+    category: post.Category
+      ? [post.Category.name, getDisplayFormat(post)].filter(Boolean).join(' · ')
+      : post.Tags.map((tag) => tag.name)
+          .slice(0, 2)
+          .join(' · '),
     date: getDateStr(post.Date),
     image: await getEditorialImage(post),
   })

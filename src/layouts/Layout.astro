@@ -1,8 +1,9 @@
 ---
 import { SEO } from 'astro-seo';
 import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants.ts'
-import { getDatabase, getAllTags, getAllPosts } from '../lib/notion/client.ts'
-import { getNavLink, getStaticFilePath, getTagLink } from '../lib/blog-helpers.ts'
+import { getDatabase, getAllPosts } from '../lib/notion/client.ts'
+import { getNavLink, getStaticFilePath } from '../lib/blog-helpers.ts'
+import { getTaxonomyEntries, getTaxonomyLink } from '../lib/taxonomy'
 import '../styles/syntax-coloring.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
 import PrimerShell from '../components/primer/PrimerShell'
@@ -31,8 +32,9 @@ export type OpenGraph = {
 };
 
 const database = await getDatabase()
-const tags = await getAllTags()
 const allPosts = await getAllPosts()
+const categories = getTaxonomyEntries(allPosts, 'category')
+const formats = getTaxonomyEntries(allPosts, 'format')
 
 const {
   currentTag = '',
@@ -103,9 +105,10 @@ const siteOGImage = new URL(
       homeHref={getNavLink('/')}
       feedHref={getNavLink('/feed')}
       currentTag={currentTag}
-      isIndex={!path.startsWith('/posts/') || path.startsWith('/posts/page/') || path.startsWith('/posts/tag/')}
-      tags={tags.map(tag => ({name: tag.name, href: getTagLink(tag.name), count: allPosts.filter(post => post.Tags.some(t => t.name === tag.name)).length})).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'ja'))}
-      posts={allPosts.map(post => ({...toListPost(post), tags: post.Tags.map(tag => tag.name)}))}
+      isIndex={!path.startsWith('/posts/') || path.startsWith('/posts/page/')}
+      tags={categories.map(category => ({...category, href: getTaxonomyLink('category', category.name)}))}
+      formats={formats.map(format => ({...format, href: getTaxonomyLink('format', format.name)}))}
+      posts={allPosts.map(post => ({...toListPost(post), tags: [post.Category?.name, post.Format?.name, ...post.Topics.map(topic => topic.name), ...post.Tags.map(tag => tag.name)].filter((name): name is string => Boolean(name))}))}
       client:load
     >
       <slot name="main" />

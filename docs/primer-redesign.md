@@ -32,6 +32,8 @@ node --env-file=.env node_modules/astro/astro.js preview --host 127.0.0.1 --port
 
 実装の基準と独自UIの扱いは[デザインルール](./design-rules.md)を参照してください。
 
+Notionの記事分類は[ブログ記事の分類](./blog-taxonomy.md)を参照してください。カテゴリー、記事形式、トピックの3項目を別々に扱い、旧TagsのURLも維持します。
+
 - `src/components/primer/PrimerShell.tsx`: ヘッダー、カテゴリー、検索ダイアログ、テーマ切り替え。
 - `src/components/primer/PostList.tsx`: 記事一覧。
 - `src/components/primer/BlogPagination.tsx`: 公式Paginationの日本語化。
@@ -61,6 +63,8 @@ node --env-file=.env node_modules/astro/astro.js preview --host 127.0.0.1 --port
 ## OGPを確認する
 
 記事のOGPは `/og/<記事のSlug>.png`、ブログ全体のOGPは `/og.png` に生成します。FeaturedImageを優先し、未設定の読書記事は本文の最初の画像を使います。画像がない、または読み込めない場合はタイトル中心の構成になります。
+
+カテゴリーのOGPは `/og/category/<カテゴリー名>.png` に生成します。「本の記事」「EMの記事」のようにカテゴリー名を大きく表示し、記事OGPと同じタイトル中心の構成を使います。同じカテゴリーの2ページ目以降もこの画像を共有し、OGPとTwitterカードの両方に設定します。
 
 OGPのフォントはビルド時だけ読み込み、ページ表示時には配信しません。出典とライセンスは `src/assets/fonts/README.md` に記録しています。
 

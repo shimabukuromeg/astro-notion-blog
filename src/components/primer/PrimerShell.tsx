@@ -41,6 +41,7 @@ interface Props {
   homeHref: string;
   feedHref: string;
   tags: { name: string; href: string; count: number }[];
+  formats?: { name: string; href: string; count: number }[];
   posts: SearchPost[];
   currentTag?: string;
   isIndex: boolean;
@@ -85,6 +86,7 @@ export default function PrimerShell({
   homeHref,
   feedHref,
   tags,
+  formats = [],
   posts,
   currentTag,
   isIndex,
@@ -153,7 +155,7 @@ export default function PrimerShell({
   const visibleTags = tags.filter((tag) =>
     normalize(tag.name).includes(normalize(categoryQuery))
   );
-  const navigationTags = tags.slice(0, 6);
+  const navigationTags = tags.slice(0, 3);
   const selectedTag = tags.find((tag) => tag.name === currentTag);
   if (selectedTag && !navigationTags.includes(selectedTag))
     navigationTags.push(selectedTag);
@@ -197,6 +199,19 @@ export default function PrimerShell({
         <p className="category-empty" role="status">
           一致するカテゴリーがありません。
         </p>
+      )}
+      {formats.length > 0 && (
+        <div className="taxonomy-format-navigation">
+          <p>記事形式から探す</p>
+          <NavList aria-label="記事形式">
+            {formats.map((format) => (
+              <NavList.Item key={format.name} href={format.href}>
+                {format.name}
+                <NavList.TrailingVisual>{format.count}</NavList.TrailingVisual>
+              </NavList.Item>
+            ))}
+          </NavList>
+        </div>
       )}
     </>
   );
@@ -338,7 +353,7 @@ export default function PrimerShell({
         </footer>
         {menuOpen && (
           <Dialog
-            title="カテゴリーから記事を読む"
+            title="カテゴリー・記事形式から読む"
             renderHeader={JapaneseDialogHeader}
             onClose={() => setMenuOpen(false)}
             initialFocusRef={categoryInputRef}
@@ -356,7 +371,7 @@ export default function PrimerShell({
             initialFocusRef={inputRef}
           >
             <FormControl>
-              <FormControl.Label>タイトル・概要・カテゴリー</FormControl.Label>
+              <FormControl.Label>タイトル・概要・分類</FormControl.Label>
               <TextInput
                 ref={inputRef}
                 block
