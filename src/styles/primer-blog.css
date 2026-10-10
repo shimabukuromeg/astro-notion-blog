@@ -573,6 +573,7 @@ a {
 .article-header h1 {
   margin: 0;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .article-tags {
   display: flex;
@@ -585,6 +586,11 @@ a {
 .article-header nav.article-tags {
   margin-top: var(--base-size-20);
   margin-bottom: 0;
+  font-weight: var(--base-text-weight-normal);
+  line-height: var(--base-text-lineHeight-loose);
+}
+.article-header nav.article-tags > span {
+  color: var(--brand-color-text-muted);
 }
 .article-deck {
   color: var(--brand-color-text-muted);
@@ -594,11 +600,40 @@ a {
 }
 .article-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--base-size-16);
   margin-top: var(--base-size-24);
   font-size: var(--brand-text-size-100);
   color: var(--brand-color-text-muted);
+}
+.article-share-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--base-size-16);
+  margin-top: var(--base-size-48);
+  padding-top: var(--base-size-32);
+  border-top: var(--brand-borderWidth-thin) solid
+    var(--brand-color-border-default);
+}
+.article-share-footer > p {
+  margin: 0;
+  font-size: var(--brand-text-size-100);
+  font-weight: var(--base-text-weight-semibold);
+  color: var(--brand-color-text-muted);
+}
+.article-meta-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--base-size-12);
+  margin-left: auto;
+}
+/* This Button version reads the default foreground for invisible links too. */
+.article-share-header {
+  --button-default-fgColor-rest: var(--fgColor-default);
 }
 .eyebrow {
   display: block;
@@ -1200,11 +1235,12 @@ summary:focus-visible {
   .mobile-toc {
     display: block;
     padding: var(--base-size-16) 0;
-    border-top: var(--brand-borderWidth-thin) solid
-      var(--brand-color-border-subtle);
     border-bottom: var(--brand-borderWidth-thin) solid
       var(--brand-color-border-subtle);
     margin-bottom: var(--base-size-32);
+  }
+  .article-header:has(+ .mobile-toc) {
+    margin-bottom: 0;
   }
   .mobile-toc summary {
     font-size: var(--brand-text-size-100);
