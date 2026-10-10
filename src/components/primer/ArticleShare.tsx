@@ -1,9 +1,10 @@
 import { Button } from '@primer/react-brand';
+import { LinkButton } from '@primer/react';
 
 interface Props {
   title: string;
   url: string;
-  variant?: 'secondary' | 'subtle';
+  placement?: 'header' | 'footer';
 }
 
 // Original artwork: https://about.x.com/content/dam/about-twitter/x/brand-toolkit/x-logo.zip
@@ -22,10 +23,27 @@ function XLogo() {
   );
 }
 
-export default function ArticleShare({ title, url, variant = 'secondary' }: Props) {
+export default function ArticleShare({ title, url, placement = 'footer' }: Props) {
   const shareUrl = new URL('https://x.com/intent/tweet');
   shareUrl.searchParams.set('text', title);
   shareUrl.searchParams.set('url', url);
+
+  if (placement === 'header') {
+    return (
+      <LinkButton
+        className="article-share-header"
+        href={shareUrl.toString()}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="invisible"
+        size="large"
+        leadingVisual={XLogo}
+        aria-label="この記事をXでシェア（新しいタブで開く）"
+      >
+        シェア
+      </LinkButton>
+    );
+  }
 
   return (
     <Button
@@ -33,8 +51,8 @@ export default function ArticleShare({ title, url, variant = 'secondary' }: Prop
       href={shareUrl.toString()}
       target="_blank"
       rel="noopener noreferrer"
-      variant={variant}
-      size="small"
+      variant="secondary"
+      size="medium"
       hasArrow={false}
       leadingVisual={<XLogo />}
       aria-label="この記事をXでシェア（新しいタブで開く）"

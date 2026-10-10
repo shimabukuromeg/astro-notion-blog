@@ -117,6 +117,7 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
       {orderedHeadings.length > 0 && <details class="mobile-toc"><summary>この記事の内容</summary><ArticleToc headings={orderedHeadings} /></details>}
       <PostBody blocks={articleBlocks} />
       <div class="article-share-footer">
+        <p>この記事をシェア</p>
         <ArticleShare title={post.Title} url={articleUrl} />
       </div>
       <nav class="article-pagination" aria-label="前後の記事">

@@ -56,19 +56,21 @@ export default function ArticleHeader({
         {excerpt && <p className="article-deck">{excerpt}</p>}
         <div className="article-meta">
           <time dateTime={date}>{date}</time>
-          <ArticleShare title={title} url={articleUrl} variant="subtle" />
-          {editHref && (
-            <Button
-              as="a"
-              href={editHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              size="small"
-              leadingVisual={PencilIcon}
-            >
-              Notionで編集
-            </Button>
-          )}
+          <div className="article-meta-actions">
+            <ArticleShare title={title} url={articleUrl} placement="header" />
+            {editHref && (
+              <Button
+                as="a"
+                href={editHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="small"
+                leadingVisual={PencilIcon}
+              >
+                Notionで編集
+              </Button>
+            )}
+          </div>
         </div>
         {topics.length > 0 && (
           <nav className="article-tags" aria-label="この記事のトピック">
