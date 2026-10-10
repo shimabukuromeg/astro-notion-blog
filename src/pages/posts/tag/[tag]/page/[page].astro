@@ -6,6 +6,7 @@ import {
   getNumberOfPagesByTag,
 } from '../../../../../lib/notion/client.ts'
 import Layout from '../../../../../layouts/Layout.astro'
+import { getStaticFilePath } from '../../../../../lib/blog-helpers.ts'
 
 export async function getStaticPaths() {
   const allTags = await getAllTags()
@@ -35,7 +36,19 @@ const [posts, numberOfPages] = await Promise.all([
 import PostIndex from '../../../../../components/PostIndex.astro'
 ---
 
-<Layout title={`${tag}の記事`} currentTag={tag} path={`/posts/tag/${encodeURIComponent(tag)}/page/${page}`}>
+<Layout
+  title={`${tag}の記事`}
+  currentTag={tag}
+  path={`/posts/tag/${encodeURIComponent(tag)}/page/${page}`}
+  openGraph={{
+    basic: {
+      title: `${tag}の記事`,
+      type: 'website',
+      image: new URL(getStaticFilePath(`/og/category/${encodeURIComponent(tag)}.png`), Astro.site).toString(),
+    },
+    image: { alt: `${tag}の記事` },
+  }}
+>
   <div slot="main">
     <PostIndex posts={posts} currentPage={parseInt(page, 10)} numberOfPages={numberOfPages} tag={tag} />
   </div>
