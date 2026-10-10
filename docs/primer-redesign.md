@@ -41,6 +41,8 @@ node --env-file=.env node_modules/astro/astro.js preview --host 127.0.0.1 --port
 - `src/components/primer/QuizCard.tsx`: クイズの選択、採点、解説と再回答。
 - `src/lib/quiz-helpers.ts`: Notionのクイズ形式の読み取りと採点。
 - `src/styles/primer-blog.css`: レイアウト、公式トークンの読み込み、日本語本文の文字組み。
+- `src/components/OgImage.tsx`: タイトル中心・画像付きのOGP生成。
+- `src/lib/og-tokens.ts`: Primer BrandのトークンをOGP用に読み込む処理。
 
 見出し・カード・リンク・フォームには `@primer/react-brand`、ダイアログ・ページ送り・採点結果には `@primer/react` を使います。Brandのトークンと `@primer/primitives`、`@primer/octicons-react` で独自UIを補います。記事本文は日本語の長文に合わせて行間を広げています。Notionの色注釈とコードの構文色もPrimerのテーマに連動します。
 
@@ -55,6 +57,12 @@ node --env-file=.env node_modules/astro/astro.js preview --host 127.0.0.1 --port
 正解が1つならラジオボタン、複数ならチェックボックスになります。「回答する」で採点し、「正解を見る」で解説を確認できます。「もう一度解く」で選択と結果をリセットします。回答はブラウザー内で処理し、Notionのチェック状態は変更しません。
 
 正解がない、選択肢が足りない、選択肢に子ブロックがある場合は、元のNotionトグルとして表示します。JavaScriptが無効の場合も、折りたたみから正解と解説を読めます。
+
+## OGPを確認する
+
+記事のOGPは `/og/<記事のSlug>.png`、ブログ全体のOGPは `/og.png` に生成します。FeaturedImageを優先し、未設定の読書記事は本文の最初の画像を使います。画像がない、または読み込めない場合はタイトル中心の構成になります。
+
+OGPのフォントはビルド時だけ読み込み、ページ表示時には配信しません。出典とライセンスは `src/assets/fonts/README.md` に記録しています。
 
 ## 参照した公式ソース
 
