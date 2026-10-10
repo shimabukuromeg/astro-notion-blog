@@ -1,31 +1,70 @@
 ---
-export interface Props {
-  url: URL
-}
-
-const { url } = Astro.props
-
-const postURL =
-  url.hostname === 'x.com' || url.hostname === 'www.x.com'
-    ? new URL(url.pathname, 'https://twitter.com')
-    : url
+import { Button } from '@primer/react'
+import { LinkExternalIcon } from '@primer/octicons-react'
+export interface Props { url: URL; embedId: string }
+const { url, embedId } = Astro.props
+const postURL = url.hostname === 'x.com' || url.hostname === 'www.x.com' ? new URL(url.pathname, 'https://twitter.com') : url
+const postId = postURL.pathname.match(/\/status\/(\d+)/)?.[1]
+const containerId = `tweet-${embedId}`
 ---
 
-<div class="tweet-embed">
-  <blockquote class="twitter-tweet">
-    <a href={postURL}></a>
-  </blockquote>
+<div class="tweet-embed" data-tweet-id={postId}>
+  <div class="tweet-preview">
+    <div><span class="eyebrow">REFERENCE / X</span><a href={postURL.toString()} target="_blank" rel="noopener noreferrer">Xで投稿を読む <LinkExternalIcon size={14} /></a></div>
+    {postId && <Button className="tweet-load-button" aria-controls={containerId} aria-expanded="false" hidden>投稿を表示</Button>}
+  </div>
+  <p class="tweet-status" role="status" hidden></p>
+  <div id={containerId} class="tweet-content"></div>
 </div>
 
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-<style>
-  .tweet-embed {
-    width: 100%;
-    max-width: 640px;
-    margin: auto;
+<script>
+  type TweetWidgets = { createTweet: (id: string, container: HTMLElement, options: {theme: string; dnt: boolean}) => Promise<HTMLElement | undefined> }
+  type TweetWindow = Window & {twttr?: {widgets?: TweetWidgets}}
+  let widgetsPromise: Promise<TweetWidgets> | undefined
+  const loadWidgets = () => {
+    const existing = (window as TweetWindow).twttr?.widgets
+    if (existing) return Promise.resolve(existing)
+    if (widgetsPromise) return widgetsPromise
+    widgetsPromise = new Promise<TweetWidgets>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = 'https://platform.twitter.com/widgets.js'
+      script.async = true
+      script.onload = () => {
+        const widgets = (window as TweetWindow).twttr?.widgets
+        if (widgets) resolve(widgets)
+        else reject(new Error('Tweet widgets unavailable'))
+      }
+      script.onerror = () => { script.remove(); reject(new Error('Tweet widgets failed to load')) }
+      document.head.append(script)
+    }).catch(error => { widgetsPromise = undefined; throw error })
+    return widgetsPromise
   }
-  .tweet-embed div:first-child div:first-child {
-    margin: auto;
-  }
-</style>
+  document.querySelectorAll<HTMLElement>('.tweet-embed[data-tweet-id]').forEach(root => {
+    const button = root.querySelector<HTMLButtonElement>('.tweet-load-button')
+    const container = root.querySelector<HTMLElement>('.tweet-content')
+    const status = root.querySelector<HTMLElement>('.tweet-status')
+    const id = root.dataset.tweetId
+    if (!button || !container || !status || !id) return
+    button.hidden = false
+    button.addEventListener('click', async () => {
+      button.disabled = true
+      button.textContent = '読み込み中…'
+      status.hidden = true
+      container.replaceChildren()
+      try {
+        const widgets = await loadWidgets()
+        const tweet = await widgets.createTweet(id, container, {theme: document.documentElement.dataset.colorMode === 'dark' ? 'dark' : 'light', dnt: true})
+        if (!tweet) throw new Error('Tweet unavailable')
+        button.hidden = true
+        button.setAttribute('aria-expanded', 'true')
+        container.tabIndex = -1
+        container.focus()
+      } catch {
+        status.textContent = '投稿を読み込めませんでした。Xで直接読むこともできます。'
+        status.hidden = false
+        button.disabled = false
+        button.textContent = 'もう一度表示する'
+      }
+    })
+  })
+</script>

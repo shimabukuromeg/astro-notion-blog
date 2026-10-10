@@ -10,7 +10,7 @@ const { block } = Astro.props
 ---
 
 <div class="table">
-  <table>
+  <table tabindex="0" aria-label="記事内の表">
     <tbody>
       {
         block.Table.Rows.map((tableRow: interfaces.TableRow, j: number) => (
@@ -21,7 +21,7 @@ const { block } = Astro.props
                 (block.Table.HasColumnHeader && j === 0)
               ) {
                 return (
-                  <th>
+                  <th scope={block.Table.HasColumnHeader && j === 0 ? 'col' : 'row'}>
                     {cell.RichTexts.map((richText: interfaces.RichText) => (
                       <RichText richText={richText} />
                     ))}
@@ -47,10 +47,10 @@ const { block } = Astro.props
   .table {
   }
   .table table {
-    margin: 0.6rem 0;
+    margin: var(--base-size-8) 0;
   }
   .table th,
   .table td {
-    font-weight: normal;
+    font-weight: var(--base-text-weight-normal);
   }
 </style>

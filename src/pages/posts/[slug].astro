@@ -1,7 +1,6 @@
 ---
 import * as interfaces from '../../lib/interfaces.ts'
 import {
-  getPosts,
   getAllPosts,
   getPostBySlug,
   getBlock,
@@ -10,16 +9,18 @@ import {
 } from '../../lib/notion/client.ts'
 import {
   getPostLink,
+  getNavLink,
+  getStaticFilePath,
   filePath,
   extractTargetBlocks,
+  buildHeadingId,
 } from '../../lib/blog-helpers.ts'
 import Layout from '../../layouts/Layout.astro'
-import PostDate from '../../components/PostDate.astro'
-import PostTags from '../../components/PostTags.astro'
-import PostTitle from '../../components/PostTitle.astro'
 import PostBody from '../../components/PostBody.astro'
-import PostRelativeLink from '../../components/PostRelativeLink.astro'
-import styles from '../../styles/blog.module.css'
+import ArticleHeader from '../../components/primer/ArticleHeader'
+import ArticleToc from '../../components/primer/ArticleToc'
+import { toListPost, getArticleHeadings } from '../../lib/primer-helpers'
+
 
 export async function getStaticPaths() {
   const posts = await getAllPosts()
@@ -30,7 +31,7 @@ const { slug } = Astro.params
 
 const post = await getPostBySlug(slug)
 if (!post) {
-  throw new Error('Post not found. slug: ${slug}')
+  throw new Error(`Post not found. slug: ${slug}`)
 }
 
 const [blocks, allPosts] = await Promise.all([
@@ -77,6 +78,13 @@ const currentPostIndex = allPosts.findIndex((post) => post.Slug === slug)
 const prevPost = allPosts[currentPostIndex + 1]
 const nextPost = allPosts[currentPostIndex - 1]
 
+const listPost = toListPost(post)
+const firstHeading = blocks[0]?.Heading1
+const normalizeTitle = (title: string) => title.normalize('NFKC').replace(/\s+/g, '')
+const repeatsTitle = firstHeading && !firstHeading.IsToggleable && !firstHeading.Children?.length && normalizeTitle(firstHeading.RichTexts.map(text => text.PlainText).join('')) === normalizeTitle(post.Title)
+const articleBlocks = repeatsTitle ? blocks.slice(1) : blocks
+const titleHeadingId = repeatsTitle ? buildHeadingId(firstHeading) : undefined
+const orderedHeadings = getArticleHeadings(articleBlocks)
 const isDev = import.meta.env.DEV
 const notionEditUrl = `https://www.notion.so/megumis/${post.PageId.replace(/-/g, '')}`
 
@@ -95,50 +103,22 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
     basic: {
       title: post.Title,
       type: 'article',
-      image: new URL(`/og/${post.Slug}.png`, Astro.url.origin).toString(),
+      image: new URL(getStaticFilePath(`/og/${post.Slug}.png`), Astro.site).toString(),
     },
     image: { alt: post.Title },
   }}
 >
 
-  <div slot="main" class={styles.main}>
-    <article class={styles.post}>
-      <div class="post-header">
-        <PostTitle post={post} enableLink={false} />
-        {isDev && (
-          <a href={notionEditUrl} target="_blank" rel="noopener noreferrer" class="edit-link">
-            編集
-          </a>
-        )}
-      </div>
-      <PostDate post={post} />
-      <PostTags post={post} />
-      <PostBody blocks={blocks} />
-
-      <footer>
-        <PostRelativeLink prevPost={prevPost} nextPost={nextPost} />
-      </footer>
+  <div slot="main" class="article-grid">
+    <article class="article-content">
+      <ArticleHeader {...listPost} headingId={titleHeadingId} homeHref={getNavLink('/')} editHref={isDev ? notionEditUrl : undefined} />
+      {orderedHeadings.length > 0 && <details class="mobile-toc"><summary>この記事の内容</summary><ArticleToc headings={orderedHeadings} /></details>}
+      <PostBody blocks={articleBlocks} />
+      <nav class="article-pagination" aria-label="前後の記事">
+        {prevPost && <a href={getPostLink(prevPost.Slug)}><span>← 前の記事</span>{prevPost.Title}</a>}
+        {nextPost && <a href={getPostLink(nextPost.Slug)}><span>次の記事 →</span>{nextPost.Title}</a>}
+      </nav>
     </article>
+    {orderedHeadings.length > 0 && <aside class="toc-container"><ArticleToc headings={orderedHeadings} client:load /></aside>}
   </div>
 </Layout>
-
-<style>
-  .post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .edit-link {
-    font-size: 0.8rem;
-    color: #888;
-    text-decoration: none;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-  .edit-link:hover {
-    color: #333;
-    border-color: #999;
-  }
-</style>

@@ -19,12 +19,12 @@ const { richTexts } = Astro.props
 <style>
   .caption {
     display: flex;
-    margin-top: 0.3rem;
-    font-size: 0.9rem;
+    margin-top: var(--base-size-4);
+    font-size: var(--text-body-size-small);
     color: var(--accents-3);
     white-space: pre-wrap;
     word-break: break-word;
-    line-height: 1.4;
+    line-height: var(--base-text-lineHeight-relaxed);
   }
   .caption > div {
     flex-grow: 1;

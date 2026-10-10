@@ -1,0 +1,42 @@
+---
+import type { Post } from '../lib/interfaces'
+import { getAllPosts } from '../lib/notion/client'
+import { getNavLink, getTagLink } from '../lib/blog-helpers'
+import { getEditorialImage } from '../lib/editorial-image'
+import { toListPost, pageLinks } from '../lib/primer-helpers'
+import PostList from './primer/PostList'
+
+interface Props {
+  posts: Post[]
+  currentPage: number
+  numberOfPages: number
+  tag?: string
+}
+const { posts, currentPage, numberOfPages, tag = '' } = Astro.props
+const allPosts = await getAllPosts()
+const total = tag ? allPosts.filter(post => post.Tags.some(t => t.name === tag)).length : allPosts.length
+const topics = [
+  { name: '本', label: '読書の記録', shortLabel: '読書の記録' },
+  { name: 'EM', label: '組織とマネジメント', shortLabel: '組織づくり' },
+  { name: '日記', label: '日々のメモ', shortLabel: '日々のメモ' },
+].map(topic => ({...topic, href: getTagLink(topic.name), count: allPosts.filter(post => post.Tags.some(t => t.name === topic.name)).length})).filter(topic => topic.count > 0)
+// Book reviews already contain the book cover. Reuse that actual content for
+// the home feed rather than displaying an unrelated placeholder. Explicit
+// FeaturedImage always wins; only the seven visible editorial stories need it.
+const listPosts = await Promise.all(posts.map(async (post, index) => {
+  const item = toListPost(post)
+  if (tag || currentPage !== 1 || index >= 7 || item.image || !post.Tags.some(t => t.name === '本')) return item
+  const image = await getEditorialImage(post)
+  return { ...item, image: image?.src }
+}))
+---
+
+<PostList
+  posts={listPosts}
+  total={total}
+  topics={topics}
+  tag={tag}
+  homeHref={getNavLink('/')}
+  currentPage={currentPage}
+  pageLinks={pageLinks(numberOfPages, tag)}
+/>
