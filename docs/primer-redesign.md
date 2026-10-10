@@ -32,6 +32,8 @@ node --env-file=.env node_modules/astro/astro.js preview --host 127.0.0.1 --port
 
 実装の基準と独自UIの扱いは[デザインルール](./design-rules.md)を参照してください。
 
+Notionの記事分類は[ブログ記事の分類](./blog-taxonomy.md)を参照してください。カテゴリー、記事形式、トピックの3項目を別々に扱い、旧TagsのURLも維持します。
+
 - `src/components/primer/PrimerShell.tsx`: ヘッダー、カテゴリー、検索ダイアログ、テーマ切り替え。
 - `src/components/primer/PostList.tsx`: 記事一覧。
 - `src/components/primer/BlogPagination.tsx`: 公式Paginationの日本語化。

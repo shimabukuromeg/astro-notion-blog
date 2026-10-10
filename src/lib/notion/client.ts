@@ -993,6 +993,9 @@ function _buildPost(pageObject: responses.PageObject): Post {
       : '',
     Date: prop.Date.date ? prop.Date.date.start : '',
     Tags: prop.Tags.multi_select ? prop.Tags.multi_select : [],
+    Category: prop['カテゴリー']?.select || null,
+    Format: prop['記事形式']?.select || null,
+    Topics: prop['トピック']?.multi_select || [],
     Excerpt:
       prop.Excerpt.rich_text && prop.Excerpt.rich_text.length > 0
         ? prop.Excerpt.rich_text.map((richText) => richText.plain_text).join('')

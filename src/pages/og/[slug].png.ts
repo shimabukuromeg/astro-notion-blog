@@ -23,9 +23,11 @@ export async function GET({ params }: APIContext) {
   const body = await getOgImage({
     title: post.Title,
     author: database.Title,
-    category: post.Tags.map((tag) => tag.name)
-      .slice(0, 2)
-      .join(' · '),
+    category: post.Category
+      ? [post.Category.name, post.Format?.name].filter(Boolean).join(' · ')
+      : post.Tags.map((tag) => tag.name)
+          .slice(0, 2)
+          .join(' · '),
     date: getDateStr(post.Date),
     image: await getEditorialImage(post),
   })

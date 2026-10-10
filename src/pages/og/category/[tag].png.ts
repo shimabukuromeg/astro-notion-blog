@@ -1,10 +1,18 @@
 import type { APIContext } from 'astro'
 import { getOgImage } from '../../../components/OgImage'
-import { getAllTags, getDatabase } from '../../../lib/notion/client'
+import {
+  getAllTags,
+  getAllPosts,
+  getDatabase,
+} from '../../../lib/notion/client'
+import { getTaxonomyEntries } from '../../../lib/taxonomy'
 
 export async function getStaticPaths() {
   const tags = await getAllTags()
-  return tags.map((tag) => ({ params: { tag: tag.name } }))
+  const categories = getTaxonomyEntries(await getAllPosts(), 'category')
+  return [...new Set([...tags, ...categories].map((tag) => tag.name))].map(
+    (tag) => ({ params: { tag } })
+  )
 }
 
 export async function GET({ params }: APIContext) {

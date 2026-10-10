@@ -1,0 +1,28 @@
+---
+import { getAllPosts } from '../../../../../lib/notion/client'
+import { NUMBER_OF_POSTS_PER_PAGE } from '../../../../../server-constants'
+import { taxonomyKinds, getTaxonomyEntries, getTaxonomyOgPath, matchesTaxonomy, type TaxonomyKind } from '../../../../../lib/taxonomy'
+import Layout from '../../../../../layouts/Layout.astro'
+import PostIndex from '../../../../../components/PostIndex.astro'
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts()
+  return taxonomyKinds.flatMap(kind => getTaxonomyEntries(posts, kind).flatMap(entry =>
+    Array.from({ length: Math.ceil(entry.count / NUMBER_OF_POSTS_PER_PAGE) - 1 }, (_, index) => ({
+      params: { kind, name: entry.name, page: String(index + 2) },
+      props: { kind, name: entry.name, page: index + 2 },
+    }))
+  ))
+}
+interface Props { kind: TaxonomyKind; name: string; page: number }
+const { kind, name, page } = Astro.props
+const posts = (await getAllPosts()).filter(post => matchesTaxonomy(post, kind, name))
+const numberOfPages = Math.ceil(posts.length / NUMBER_OF_POSTS_PER_PAGE)
+const title = `${name}の記事`
+---
+<Layout title={title} currentTag={kind === 'category' ? name : undefined} path={`/posts/${kind}/${encodeURIComponent(name)}/page/${page}`}
+  openGraph={{ basic: { title, type: 'website', image: new URL(getTaxonomyOgPath(kind, name), Astro.site).toString() }, image: { alt: title } }}>
+  <div slot="main">
+    <PostIndex posts={posts.slice((page - 1) * NUMBER_OF_POSTS_PER_PAGE, page * NUMBER_OF_POSTS_PER_PAGE)} currentPage={page} numberOfPages={numberOfPages} tag={name} taxonomy={kind} />
+  </div>
+</Layout>
