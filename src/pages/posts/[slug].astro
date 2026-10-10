@@ -19,6 +19,7 @@ import Layout from '../../layouts/Layout.astro'
 import PostBody from '../../components/PostBody.astro'
 import ArticleHeader from '../../components/primer/ArticleHeader'
 import ArticleToc from '../../components/primer/ArticleToc'
+import ArticleShare from '../../components/primer/ArticleShare'
 import { toListPost, getArticleHeadings } from '../../lib/primer-helpers'
 
 
@@ -79,6 +80,7 @@ const prevPost = allPosts[currentPostIndex + 1]
 const nextPost = allPosts[currentPostIndex - 1]
 
 const listPost = toListPost(post)
+const articleUrl = new URL(getNavLink(getPostLink(post.Slug)), Astro.site).toString()
 const firstHeading = blocks[0]?.Heading1
 const normalizeTitle = (title: string) => title.normalize('NFKC').replace(/\s+/g, '')
 const repeatsTitle = firstHeading && !firstHeading.IsToggleable && !firstHeading.Children?.length && normalizeTitle(firstHeading.RichTexts.map(text => text.PlainText).join('')) === normalizeTitle(post.Title)
@@ -111,9 +113,12 @@ if (post.FeaturedImage && post.FeaturedImage.Url) {
 
   <div slot="main" class="article-grid">
     <article class="article-content">
-      <ArticleHeader {...listPost} headingId={titleHeadingId} homeHref={getNavLink('/')} editHref={isDev ? notionEditUrl : undefined} />
+      <ArticleHeader {...listPost} articleUrl={articleUrl} headingId={titleHeadingId} homeHref={getNavLink('/')} editHref={isDev ? notionEditUrl : undefined} />
       {orderedHeadings.length > 0 && <details class="mobile-toc"><summary>この記事の内容</summary><ArticleToc headings={orderedHeadings} /></details>}
       <PostBody blocks={articleBlocks} />
+      <div class="article-share-footer">
+        <ArticleShare title={post.Title} url={articleUrl} />
+      </div>
       <nav class="article-pagination" aria-label="前後の記事">
         {prevPost && <a href={getPostLink(prevPost.Slug)}><span>← 前の記事</span>{prevPost.Title}</a>}
         {nextPost && <a href={getPostLink(nextPost.Slug)}><span>次の記事 →</span>{nextPost.Title}</a>}

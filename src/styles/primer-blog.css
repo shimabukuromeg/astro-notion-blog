@@ -594,11 +594,15 @@ a {
 }
 .article-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--base-size-16);
   margin-top: var(--base-size-24);
   font-size: var(--brand-text-size-100);
   color: var(--brand-color-text-muted);
+}
+.article-share-footer {
+  margin-top: var(--base-size-32);
 }
 .eyebrow {
   display: block;

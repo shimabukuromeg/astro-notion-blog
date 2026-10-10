@@ -5,12 +5,14 @@ import {
   InlineLink as Link,
 } from '@primer/react-brand';
 import { PencilIcon } from '@primer/octicons-react';
+import ArticleShare from './ArticleShare';
 
 interface Props {
   title: string;
   date: string;
   excerpt: string;
   homeHref: string;
+  articleUrl: string;
   tags: { name: string; href: string }[];
   topics?: { name: string; href: string }[];
   editHref?: string;
@@ -23,6 +25,7 @@ export default function ArticleHeader({
   tags,
   topics = [],
   homeHref,
+  articleUrl,
   editHref,
   headingId,
 }: Props) {
@@ -53,6 +56,7 @@ export default function ArticleHeader({
         {excerpt && <p className="article-deck">{excerpt}</p>}
         <div className="article-meta">
           <time dateTime={date}>{date}</time>
+          <ArticleShare title={title} url={articleUrl} />
           {editHref && (
             <Button
               as="a"
