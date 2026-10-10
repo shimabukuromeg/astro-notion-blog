@@ -174,29 +174,31 @@ export default function PostList({
         </Text>
       </header>
       {recent.length > 0 && (
-        <div className="featured-band">
-          <section className="editorial-lead" aria-label="注目の記事">
-            <Story post={recent[0]} featured />
-            <div className="lead-stories">
-              {recent.slice(1).map((post) => (
-                <Story key={post.href} post={post} />
-              ))}
+        <section aria-labelledby="latest-heading">
+          <div className="featured-band">
+            <div className="section-heading">
+              <Heading as="h2" size="6" id="latest-heading">
+                最新の記事
+              </Heading>
             </div>
-          </section>
-        </div>
-      )}
-      {latest.length > 0 && (
-        <section className="latest-section" aria-labelledby="latest-heading">
-          <div className="section-heading">
-            <Heading as="h2" size="6" id="latest-heading">
-              最新の記事
-            </Heading>
+            <div className="editorial-lead">
+              <Story post={recent[0]} featured headingLevel="h3" />
+              <div className="lead-stories">
+                {recent.slice(1).map((post) => (
+                  <Story key={post.href} post={post} headingLevel="h3" />
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="latest-grid">
-            {latest.map((post) => (
-              <Story key={post.href} post={post} stacked headingLevel="h3" />
-            ))}
-          </div>
+          {latest.length > 0 && (
+            <div className="latest-section">
+              <div className="latest-grid">
+                {latest.map((post) => (
+                  <Story key={post.href} post={post} stacked headingLevel="h3" />
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
       {isHome && topics.length > 0 && (
