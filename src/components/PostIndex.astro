@@ -18,9 +18,9 @@ const { posts, currentPage, numberOfPages, tag = '', taxonomy } = Astro.props
 const allPosts = await getAllPosts()
 const total = tag ? allPosts.filter(post => taxonomy ? matchesTaxonomy(post, taxonomy, tag) : post.Tags.some(t => t.name === tag)).length : allPosts.length
 const topics = [
-  { name: '読書メモ', kind: 'format' as const, label: '読書の記録', shortLabel: '読書の記録' },
+  { name: '本の感想', kind: 'category' as const, label: '本の感想', shortLabel: '本の感想' },
   { name: '組織・マネジメント', kind: 'category' as const, label: '組織とマネジメント', shortLabel: '組織づくり' },
-  { name: '日記', kind: 'format' as const, label: '日々のメモ', shortLabel: '日々のメモ' },
+  { name: '日記', kind: 'category' as const, label: '日記', shortLabel: '日記' },
 ].map(topic => ({...topic, href: getTaxonomyLink(topic.kind, topic.name), count: allPosts.filter(post => matchesTaxonomy(post, topic.kind, topic.name)).length})).filter(topic => topic.count > 0)
 // Book reviews already contain the book cover. Reuse that actual content for
 // the home feed rather than displaying an unrelated placeholder. Explicit

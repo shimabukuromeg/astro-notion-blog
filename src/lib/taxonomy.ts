@@ -51,3 +51,16 @@ export function isBookReview(post: Post) {
     ? post.Format.name === '読書メモ'
     : post.Tags.some((tag) => tag.name === '本')
 }
+
+// Avoid repeating the same reading or diary label in editorial metadata.
+// The format remains available for filtering and search.
+export function getDisplayFormat(post: Post) {
+  const category = post.Category?.name
+  const format = post.Format?.name
+  if (
+    category === format ||
+    (category === '本の感想' && format === '読書メモ')
+  )
+    return undefined
+  return format
+}

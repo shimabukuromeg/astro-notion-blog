@@ -8,7 +8,7 @@ import {
   filePath,
 } from './blog-helpers'
 import type { TocEntry } from '../components/primer/ArticleToc'
-import { getTaxonomyLink } from './taxonomy'
+import { getDisplayFormat, getTaxonomyLink } from './taxonomy'
 
 const normalizedText = (text: string) =>
   text.normalize('NFKC').replace(/\s+/g, '')
@@ -30,7 +30,7 @@ export const toListPost = (post: Post) => ({
           name: post.Category.name,
           href: getTaxonomyLink('category', post.Category.name),
         },
-        ...(post.Format
+        ...(post.Format && getDisplayFormat(post)
           ? [
               {
                 name: post.Format.name,

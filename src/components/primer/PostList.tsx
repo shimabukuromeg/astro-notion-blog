@@ -44,7 +44,8 @@ function ArticleVisual({
 }) {
   const topic = post.tags[0]?.name || 'Notes';
   const Icon =
-    post.format === '読書メモ' || post.tags.some((tag) => tag.name === '本')
+    post.format === '読書メモ' ||
+    post.tags.some((tag) => tag.name === '本' || tag.name === '本の感想')
       ? BookIcon
       : post.tags.some(
             (tag) => tag.name === 'EM' || tag.name === '組織・マネジメント'

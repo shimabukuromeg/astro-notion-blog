@@ -7,6 +7,7 @@ import {
 } from '../../lib/notion/client'
 import { getEditorialImage } from '../../lib/editorial-image'
 import { getDateStr } from '../../lib/blog-helpers'
+import { getDisplayFormat } from '../../lib/taxonomy'
 
 export async function getStaticPaths() {
   const posts = await getAllPosts()
@@ -24,7 +25,7 @@ export async function GET({ params }: APIContext) {
     title: post.Title,
     author: database.Title,
     category: post.Category
-      ? [post.Category.name, post.Format?.name].filter(Boolean).join(' · ')
+      ? [post.Category.name, getDisplayFormat(post)].filter(Boolean).join(' · ')
       : post.Tags.map((tag) => tag.name)
           .slice(0, 2)
           .join(' · '),
