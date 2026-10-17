@@ -1357,6 +1357,11 @@ summary:focus-visible {
   .editorial-lead {
     display: block;
   }
+  .editorial-story .story-heading {
+    font-size: var(--brand-text-size-400);
+    line-height: var(--brand-text-lineHeight-400);
+    letter-spacing: var(--brand-heading-letterSpacing-400);
+  }
   .latest-grid {
     grid-template-columns: 1fr;
     gap: var(--base-size-32);

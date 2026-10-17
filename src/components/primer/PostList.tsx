@@ -118,8 +118,13 @@ function Story({
         </div>
         <Heading
           as={headingLevel}
+          className="story-heading"
           size={featured ? '4' : '6'}
-          weight={featured ? 'extrabold' : 'semibold'}
+          weight={
+            featured
+              ? { narrow: 'semibold', regular: 'extrabold', wide: 'extrabold' }
+              : 'semibold'
+          }
         >
           <a href={post.href} className="story-title-link">
             {post.title}
