@@ -5,6 +5,8 @@ import {
   FormControl,
   IconButton,
   NavList,
+  PortalContext,
+  registerPortalRoot,
   TextInput,
 } from '@primer/react';
 import { ThemeProvider } from '@primer/react/next';
@@ -78,6 +80,15 @@ function JapaneseDialogHeader({
 
 const HeaderSearchIcon = () => <SearchIcon size={24} />;
 const HeaderMenuIcon = () => <ThreeBarsIcon size={24} />;
+const blogPortalContext = { portalContainerName: 'blog-overlays' };
+const registerBlogPortal = (element: HTMLDivElement | null) => {
+  if (element)
+    registerPortalRoot(element, blogPortalContext.portalContainerName);
+};
+
+function SearchDialogBody({ children }: { children?: ReactNode }) {
+  return <Dialog.Body className="blog-search-body">{children}</Dialog.Body>;
+}
 
 export default function PrimerShell({
   title,
@@ -98,7 +109,7 @@ export default function PrimerShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const [categoryQuery, setCategoryQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const categoryInputRef = useRef<HTMLInputElement>(null);
+  const portalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -109,12 +120,34 @@ export default function PrimerShell({
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
+        setMenuOpen(false);
         setSearchOpen((open) => !open);
       }
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  useEffect(() => {
+    const root = portalRef.current;
+    const viewport = window.visualViewport;
+    if (!root || !viewport || (!searchOpen && !menuOpen)) return;
+
+    // iOS resizes the visual viewport, rather than 100dvh, for its keyboard.
+    const updateViewport = () => {
+      root.style.setProperty('--blog-viewport-height', `${viewport.height}px`);
+      root.style.setProperty('--blog-viewport-top', `${viewport.offsetTop}px`);
+    };
+    updateViewport();
+    viewport.addEventListener('resize', updateViewport);
+    viewport.addEventListener('scroll', updateViewport);
+    return () => {
+      viewport.removeEventListener('resize', updateViewport);
+      viewport.removeEventListener('scroll', updateViewport);
+      root.style.removeProperty('--blog-viewport-height');
+      root.style.removeProperty('--blog-viewport-top');
+    };
+  }, [searchOpen, menuOpen]);
 
   const toggleTheme = () => {
     const next = !dark;
@@ -159,16 +192,15 @@ export default function PrimerShell({
   const selectedTag = tags.find((tag) => tag.name === currentTag);
   if (selectedTag && !navigationTags.includes(selectedTag))
     navigationTags.push(selectedTag);
-  const categoryNavigation = (mobile = false) => (
+  const categoryNavigation = () => (
     <>
       <TextInput
-        ref={mobile ? categoryInputRef : undefined}
-        id={`category-filter-${mobile ? 'mobile' : 'desktop'}`}
+        id="category-filter"
         aria-label="カテゴリーを絞り込む"
         placeholder="カテゴリーを絞り込む"
         leadingVisual={SearchIcon}
         block
-        size="small"
+        size="large"
         value={categoryQuery}
         onChange={(event) => setCategoryQuery(event.target.value)}
       />
@@ -218,197 +250,225 @@ export default function PrimerShell({
 
   return (
     <ThemeProvider colorMode={dark ? 'dark' : 'light'} contextOnly>
-      <BrandThemeProvider
-        colorMode={dark ? 'dark' : 'light'}
-        data-color-mode={undefined}
-        className="primer-blog"
-      >
-        <a className="skip-link" href="#main-content">
-          本文へ移動
-        </a>
-        <div className="masthead">
-          <header className="site-header">
-            <div className="header-inner">
-              <a href={homeHref} className="site-brand" aria-label={title}>
-                <Avatar
-                  src={profileImageSrc}
-                  alt=""
-                  shape="circle"
-                  size={{ narrow: 32, regular: 48, wide: 48 }}
-                  className="brand-avatar"
-                />
-                <span className="brand-copy">
-                  <span className="brand-name">{title}</span>
-                  <span className="brand-mobile">
-                    MEGUMI <span aria-hidden="true">/</span> Blog
+      <PortalContext.Provider value={blogPortalContext}>
+        <BrandThemeProvider
+          colorMode={dark ? 'dark' : 'light'}
+          data-color-mode={undefined}
+          className="primer-blog"
+        >
+          <a className="skip-link" href="#main-content">
+            本文へ移動
+          </a>
+          <div className="masthead">
+            <header className="site-header">
+              <div className="header-inner">
+                <a href={homeHref} className="site-brand" aria-label={title}>
+                  <Avatar
+                    src={profileImageSrc}
+                    alt=""
+                    shape="circle"
+                    size={{ narrow: 32, regular: 48, wide: 48 }}
+                    className="brand-avatar"
+                  />
+                  <span className="brand-copy">
+                    <span className="brand-name">{title}</span>
+                    <span className="brand-mobile">
+                      MEGUMI <span aria-hidden="true">/</span> Blog
+                    </span>
                   </span>
-                </span>
-              </a>
-              <div className="header-actions">
-                <div className="desktop-search">
-                  <Button
-                    leadingVisual={SearchIcon}
-                    size="small"
-                    hasArrow={false}
-                    onClick={() => setSearchOpen(true)}
-                  >
-                    記事を検索
-                  </Button>
-                </div>
-                <div className="mobile-search">
-                  <IconButton
-                    icon={HeaderSearchIcon}
-                    size="large"
-                    aria-label="記事を検索"
-                    variant="invisible"
-                    onClick={() => setSearchOpen(true)}
-                  />
-                </div>
-                <div className="desktop-theme">
-                  <IconButton
-                    icon={dark ? SunIcon : MoonIcon}
-                    aria-label={
-                      dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'
-                    }
-                    onClick={toggleTheme}
-                    variant="invisible"
-                  />
-                </div>
-                <div className="mobile-menu">
-                  <IconButton
-                    icon={HeaderMenuIcon}
-                    size="large"
-                    aria-label="カテゴリーを開く"
-                    aria-expanded={menuOpen}
-                    aria-controls={
-                      menuOpen ? 'blog-mobile-categories' : undefined
-                    }
-                    onClick={() => setMenuOpen((open) => !open)}
-                    variant="invisible"
-                  />
+                </a>
+                <div className="header-actions">
+                  <div className="desktop-search">
+                    <Button
+                      leadingVisual={SearchIcon}
+                      size="small"
+                      hasArrow={false}
+                      onClick={() => setSearchOpen(true)}
+                    >
+                      記事を検索
+                    </Button>
+                  </div>
+                  <div className="mobile-search">
+                    <IconButton
+                      icon={HeaderSearchIcon}
+                      size="large"
+                      aria-label="記事を検索"
+                      aria-haspopup="dialog"
+                      aria-expanded={searchOpen}
+                      variant="invisible"
+                      onClick={() => setSearchOpen(true)}
+                    />
+                  </div>
+                  <div className="desktop-theme">
+                    <IconButton
+                      icon={dark ? SunIcon : MoonIcon}
+                      aria-label={
+                        dark
+                          ? 'ライトモードに切り替え'
+                          : 'ダークモードに切り替え'
+                      }
+                      onClick={toggleTheme}
+                      variant="invisible"
+                    />
+                  </div>
+                  <div className="mobile-menu">
+                    <IconButton
+                      icon={HeaderMenuIcon}
+                      size="large"
+                      aria-label="カテゴリーを開く"
+                      aria-haspopup="dialog"
+                      aria-expanded={menuOpen}
+                      aria-controls={
+                        menuOpen ? 'blog-mobile-categories' : undefined
+                      }
+                      onClick={() => setMenuOpen((open) => !open)}
+                      variant="invisible"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
-          <nav className="topic-navigation" aria-label="記事のカテゴリー">
-            <div className="topic-navigation-inner">
-              <Link
-                href={homeHref}
-                aria-current={isIndex && !currentTag ? 'page' : undefined}
-              >
-                すべての記事
-              </Link>
-              {navigationTags.map((tag) => (
+            </header>
+            <nav className="topic-navigation" aria-label="記事のカテゴリー">
+              <div className="topic-navigation-inner">
                 <Link
-                  key={tag.name}
-                  href={tag.href}
-                  aria-current={currentTag === tag.name ? 'page' : undefined}
+                  href={homeHref}
+                  aria-current={isIndex && !currentTag ? 'page' : undefined}
                 >
-                  {tag.name}
+                  すべての記事
                 </Link>
-              ))}
-              <button
-                type="button"
-                className="all-topics-button"
-                aria-expanded={menuOpen}
-                aria-controls={menuOpen ? 'blog-mobile-categories' : undefined}
-                onClick={() => setMenuOpen(true)}
-              >
-                カテゴリー一覧 <ChevronDownIcon size={16} />
-              </button>
-            </div>
-          </nav>
-        </div>
-        <div className="site-grid">
-          <main id="main-content" tabIndex={-1}>
-            {children}
-          </main>
-        </div>
-        <footer className="site-footer">
-          <div className="footer-about">
-            <span className="footer-name">{title}</span>
-            {description && <p>{description}</p>}
-          </div>
-          <div className="footer-theme">
-            <IconButton
-              icon={dark ? SunIcon : MoonIcon}
-              aria-label={
-                dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'
-              }
-              onClick={toggleTheme}
-              variant="invisible"
-            />
-          </div>
-          <nav className="footer-links" aria-label="その他のリンク">
-            <Link href="https://github.com/shimabukuromeg">
-              <MarkGithubIcon /> GitHub
-            </Link>
-            <Link href={feedHref}>
-              <RssIcon /> RSS
-            </Link>
-            <Link href="https://github.com/otoyo/astro-notion-blog">
-              astro-notion-blog
-            </Link>
-          </nav>
-        </footer>
-        {menuOpen && (
-          <Dialog
-            title="カテゴリー・記事形式から読む"
-            renderHeader={JapaneseDialogHeader}
-            onClose={() => setMenuOpen(false)}
-            initialFocusRef={categoryInputRef}
-            width="small"
-          >
-            <div id="blog-mobile-categories">{categoryNavigation(true)}</div>
-          </Dialog>
-        )}
-        {searchOpen && (
-          <Dialog
-            title="記事を検索"
-            renderHeader={JapaneseDialogHeader}
-            onClose={() => setSearchOpen(false)}
-            width="large"
-            initialFocusRef={inputRef}
-          >
-            <FormControl>
-              <FormControl.Label>タイトル・概要・分類</FormControl.Label>
-              <TextInput
-                ref={inputRef}
-                block
-                leadingVisual={SearchIcon}
-                placeholder="キーワードを入力…"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-            </FormControl>
-            <p className="search-count" role="status">
-              {matches.length} 件の記事
-            </p>
-            <div className="search-results">
-              <ActionList>
-                {matches.map((post) => (
-                  <ActionList.LinkItem key={post.href} href={post.href}>
-                    <ActionList.LeadingVisual>
-                      <BookIcon />
-                    </ActionList.LeadingVisual>
-                    {post.title}
-                    <ActionList.Description variant="block">
-                      {post.tags.join(' · ')}
-                      {post.tags.length > 0 ? ' — ' : ''}
-                      {post.date}
-                    </ActionList.Description>
-                  </ActionList.LinkItem>
+                {navigationTags.map((tag) => (
+                  <Link
+                    key={tag.name}
+                    href={tag.href}
+                    aria-current={currentTag === tag.name ? 'page' : undefined}
+                  >
+                    {tag.name}
+                  </Link>
                 ))}
-              </ActionList>
-              {matches.length === 0 && (
-                <p className="empty-search">
-                  一致する記事がありません。別のキーワードで検索してください。
-                </p>
-              )}
+                <button
+                  type="button"
+                  className="all-topics-button"
+                  aria-expanded={menuOpen}
+                  aria-controls={
+                    menuOpen ? 'blog-mobile-categories' : undefined
+                  }
+                  onClick={() => setMenuOpen(true)}
+                >
+                  カテゴリー一覧 <ChevronDownIcon size={16} />
+                </button>
+              </div>
+            </nav>
+          </div>
+          <div className="site-grid">
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
+          </div>
+          <footer className="site-footer">
+            <div className="footer-about">
+              <span className="footer-name">{title}</span>
+              {description && <p>{description}</p>}
             </div>
-          </Dialog>
-        )}
-      </BrandThemeProvider>
+            <div className="footer-theme">
+              <IconButton
+                icon={dark ? SunIcon : MoonIcon}
+                aria-label={
+                  dark ? 'ライトモードに切り替え' : 'ダークモードに切り替え'
+                }
+                onClick={toggleTheme}
+                variant="invisible"
+              />
+            </div>
+            <nav className="footer-links" aria-label="その他のリンク">
+              <Link href="https://github.com/shimabukuromeg">
+                <MarkGithubIcon /> GitHub
+              </Link>
+              <Link href={feedHref}>
+                <RssIcon /> RSS
+              </Link>
+              <Link href="https://github.com/otoyo/astro-notion-blog">
+                astro-notion-blog
+              </Link>
+            </nav>
+          </footer>
+          <div
+            ref={(element) => {
+              portalRef.current = element;
+              registerBlogPortal(element);
+            }}
+            className="blog-overlay-root"
+          />
+          {menuOpen && (
+            <Dialog
+              className="blog-dialog"
+              title="カテゴリー・記事形式から読む"
+              renderHeader={JapaneseDialogHeader}
+              onClose={() => setMenuOpen(false)}
+              position={{ narrow: 'fullscreen', regular: 'center' }}
+              width="large"
+            >
+              <div id="blog-mobile-categories">{categoryNavigation()}</div>
+            </Dialog>
+          )}
+          {searchOpen && (
+            <Dialog
+              className="blog-dialog"
+              title="記事を検索"
+              renderHeader={JapaneseDialogHeader}
+              renderBody={SearchDialogBody}
+              onClose={() => setSearchOpen(false)}
+              width="large"
+              position={{ narrow: 'fullscreen', regular: 'center' }}
+              initialFocusRef={inputRef}
+            >
+              <FormControl>
+                <FormControl.Label>タイトル・概要・分類</FormControl.Label>
+                <TextInput
+                  ref={inputRef}
+                  size="large"
+                  block
+                  leadingVisual={SearchIcon}
+                  placeholder="キーワードを入力…"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+              </FormControl>
+              <p className="search-count" role="status">
+                {matches.length} 件の記事
+              </p>
+              <div className="search-results">
+                <ActionList>
+                  {matches.map((post) => (
+                    <ActionList.LinkItem
+                      key={post.href}
+                      href={post.href}
+                      size="large"
+                    >
+                      <ActionList.LeadingVisual>
+                        <BookIcon />
+                      </ActionList.LeadingVisual>
+                      {post.title}
+                      <ActionList.Description
+                        variant="block"
+                        className="search-result-description"
+                      >
+                        {post.tags.join(' · ')}
+                        {post.tags.length > 0 ? ' — ' : ''}
+                        {post.date}
+                      </ActionList.Description>
+                    </ActionList.LinkItem>
+                  ))}
+                </ActionList>
+                {matches.length === 0 && (
+                  <p className="empty-search">
+                    一致する記事がありません。別のキーワードで検索してください。
+                  </p>
+                )}
+              </div>
+            </Dialog>
+          )}
+        </BrandThemeProvider>
+      </PortalContext.Provider>
     </ThemeProvider>
   );
 }
