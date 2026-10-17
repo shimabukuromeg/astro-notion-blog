@@ -1,4 +1,10 @@
 import { Card, Heading, InlineLink, Link, Text } from '@primer/react-brand';
+import {
+  BookIcon,
+  CodeIcon,
+  NoteIcon,
+  PeopleIcon,
+} from '@primer/octicons-react';
 import BlogPagination from './BlogPagination';
 
 export interface ListPost {
@@ -36,7 +42,18 @@ function ArticleVisual({
   post: ListPost;
   priority?: boolean;
 }) {
-  if (!post.image) return null;
+  const topic = post.tags[0]?.name || 'Notes';
+  const Icon =
+    post.format === '読書メモ' ||
+    post.tags.some((tag) => tag.name === '本' || tag.name === '本の感想')
+      ? BookIcon
+      : post.tags.some(
+            (tag) => tag.name === 'EM' || tag.name === '組織・マネジメント'
+          )
+        ? PeopleIcon
+        : post.tags.some((tag) => /技術|GPT|AI|開発/.test(tag.name))
+          ? CodeIcon
+          : NoteIcon;
   return (
     <a
       href={post.href}
@@ -44,13 +61,28 @@ function ArticleVisual({
       aria-hidden="true"
       tabIndex={-1}
     >
-      <img
-        src={post.image}
-        alt=""
-        width={1200}
-        height={675}
-        loading={priority ? 'eager' : 'lazy'}
-      />
+      {post.image ? (
+        <img
+          src={post.image}
+          alt=""
+          width={1200}
+          height={675}
+          loading={priority ? 'eager' : 'lazy'}
+        />
+      ) : (
+        <span className="note-art" aria-hidden="true">
+          <span className="note-art-topic">{topic}</span>
+          <span className="note-art-sheet">
+            <Icon size={64} />
+            <span className="note-art-rule" />
+            <span className="note-art-rule" />
+            <span className="note-art-rule short" />
+          </span>
+          <span className="note-art-date">
+            {post.date.replaceAll('-', '.')}
+          </span>
+        </span>
+      )}
     </a>
   );
 }
@@ -67,17 +99,13 @@ function Story({
 }) {
   return (
     <article
-      className={[
-        'editorial-story',
+      className={
         featured
-          ? 'feature-story'
+          ? 'editorial-story feature-story'
           : stacked
-            ? 'stacked-story'
-            : 'compact-story',
-        !post.image && 'story-without-image',
-      ]
-        .filter(Boolean)
-        .join(' ')}
+            ? 'editorial-story stacked-story'
+            : 'editorial-story compact-story'
+      }
     >
       <ArticleVisual post={post} priority={featured} />
       <div className="story-copy">
@@ -171,12 +199,7 @@ export default function PostList({
             <div className="latest-section">
               <div className="latest-grid">
                 {latest.map((post) => (
-                  <Story
-                    key={post.href}
-                    post={post}
-                    stacked
-                    headingLevel="h3"
-                  />
+                  <Story key={post.href} post={post} stacked headingLevel="h3" />
                 ))}
               </div>
             </div>
