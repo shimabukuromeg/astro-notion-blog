@@ -7,7 +7,6 @@ export interface ListPost {
   href: string;
   excerpt: string;
   image?: string;
-  thumbnail: string;
   format?: string;
   tags: { name: string; href: string }[];
 }
@@ -37,19 +36,16 @@ function ArticleVisual({
   post: ListPost;
   priority?: boolean;
 }) {
+  if (!post.image) return null;
   return (
     <a
       href={post.href}
-      className={
-        post.image
-          ? 'article-visual'
-          : 'article-visual article-visual-generated'
-      }
+      className="article-visual"
       aria-hidden="true"
       tabIndex={-1}
     >
       <img
-        src={post.image || post.thumbnail}
+        src={post.image}
         alt=""
         width={1200}
         height={675}
@@ -78,6 +74,7 @@ function Story({
           : stacked
             ? 'stacked-story'
             : 'compact-story',
+        !post.image && 'story-without-image',
       ]
         .filter(Boolean)
         .join(' ')}

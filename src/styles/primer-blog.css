@@ -275,9 +275,6 @@ a {
   height: 100%;
   object-fit: contain;
 }
-.article-visual-generated {
-  border: var(--brand-borderWidth-thin) solid var(--brand-color-border-subtle);
-}
 .story-topics {
   display: flex;
   flex-wrap: wrap;
@@ -342,6 +339,12 @@ a {
   aspect-ratio: 1;
 }
 .compact-story .story-topics {
+  margin-top: 0;
+}
+.editorial-story.story-without-image {
+  grid-template-columns: minmax(0, 1fr);
+}
+.editorial-story.story-without-image .story-topics {
   margin-top: 0;
 }
 .reading-topics {
