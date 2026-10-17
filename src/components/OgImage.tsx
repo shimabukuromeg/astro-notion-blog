@@ -10,10 +10,10 @@ export interface OgImageProps {
   category?: string;
   date?: string;
   image?: { url: string };
+  variant?: 'social' | 'thumbnail';
 }
 
 const width = 1200;
-const height = 630;
 const imageColumn = 352;
 const publicRoot = resolve('public');
 const fontsRoot = resolve('src/assets/fonts');
@@ -91,14 +91,20 @@ async function readEditorialImage(image?: { url: string }) {
 }
 
 export async function getOgImage(props: OgImageProps) {
+  const thumbnail = props.variant === 'thumbnail';
+  const height = thumbnail ? 675 : 630;
   const [fontData, avatarSrc, imageSrc] = await Promise.all([
     fonts,
     avatar,
-    readEditorialImage(props.image),
+    readEditorialImage(thumbnail ? undefined : props.image),
   ]);
-  const metaHeight = t.text(400) * 1.5;
-  const footerHeight = t.space[48] + t.space[24] + t.borderWidth;
-  const contentHeight = height - t.space[64] * 2 - footerHeight - t.space[32];
+  const metaHeight = thumbnail
+    ? t.text(600) * 1.5 + t.space[32] + t.borderWidth
+    : t.text(400) * 1.5;
+  const footerHeight = thumbnail
+    ? 0
+    : t.space[48] + t.space[24] + t.borderWidth + t.space[32];
+  const contentHeight = height - t.space[64] * 2 - footerHeight;
   const titleMaxHeight = contentHeight - metaHeight - t.space[32];
   const render = async (size: number, cover?: string) => {
     let titleHeight = 0;
@@ -166,7 +172,14 @@ export async function getOgImage(props: OgImageProps) {
           alignItems: 'center',
           gap: t.space[24],
           height: metaHeight,
-          fontSize: t.text(400),
+          ...(thumbnail
+            ? {
+                justifyContent: 'space-between',
+                paddingBottom: t.space[32],
+                borderBottom: `${t.borderWidth}px solid ${t.color.border}`,
+              }
+            : {}),
+          fontSize: t.text(thumbnail ? 600 : 400),
           fontWeight: t.semiboldWeight,
         }}
       >
@@ -175,7 +188,7 @@ export async function getOgImage(props: OgImageProps) {
           <span
             style={{
               color: t.color.muted,
-              fontSize: t.text(300),
+              fontSize: t.text(thumbnail ? 600 : 300),
               fontWeight: t.normalWeight,
             }}
           >
@@ -263,31 +276,37 @@ export async function getOgImage(props: OgImageProps) {
             </div>
           </div>
         )}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingTop: t.space[24],
-            borderTop: `${t.borderWidth}px solid ${t.color.border}`,
-            fontSize: t.text(400),
-            fontWeight: t.semiboldWeight,
-          }}
-        >
+        {!thumbnail && (
           <div
-            style={{ display: 'flex', alignItems: 'center', gap: t.space[16] }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingTop: t.space[24],
+              borderTop: `${t.borderWidth}px solid ${t.color.border}`,
+              fontSize: t.text(400),
+              fontWeight: t.semiboldWeight,
+            }}
           >
-            <img
-              src={avatarSrc}
-              alt=""
-              width={t.space[48]}
-              height={t.space[48]}
-              style={{ borderRadius: '50%' }}
-            />
-            <span>{props.author}</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: t.space[16],
+              }}
+            >
+              <img
+                src={avatarSrc}
+                alt=""
+                width={t.space[48]}
+                height={t.space[48]}
+                style={{ borderRadius: '50%' }}
+              />
+              <span>{props.author}</span>
+            </div>
+            <span style={{ color: t.color.muted }}>Blog</span>
           </div>
-          <span style={{ color: t.color.muted }}>Blog</span>
-        </div>
+        )}
       </div>,
       {
         width,
@@ -305,7 +324,9 @@ export async function getOgImage(props: OgImageProps) {
   for (const cover of imageSrc ? [imageSrc, undefined] : [undefined]) {
     for (const size of cover
       ? [700, 600, 500, 400]
-      : [800, 700, 600, 500, 400]) {
+      : thumbnail
+        ? [900, 800, 700, 600, 500, 400]
+        : [800, 700, 600, 500, 400]) {
       const result = await render(size, cover);
       if (result.fits) return sharp(Buffer.from(result.svg)).png().toBuffer();
     }

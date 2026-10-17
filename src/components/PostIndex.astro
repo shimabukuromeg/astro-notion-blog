@@ -24,10 +24,12 @@ const topics = [
 ].map(topic => ({...topic, href: getTaxonomyLink(topic.kind, topic.name), count: allPosts.filter(post => matchesTaxonomy(post, topic.kind, topic.name)).length})).filter(topic => topic.count > 0)
 // Book reviews already contain the book cover. Reuse that actual content for
 // the home feed rather than displaying an unrelated placeholder. Explicit
-// FeaturedImage always wins; only the seven visible editorial stories need it.
+// FeaturedImage always wins. Only stories with an image frame need a cover;
+// archive cards stay text-only, including when a generated thumbnail exists.
 const listPosts = await Promise.all(posts.map(async (post, index) => {
   const item = toListPost(post)
-  if (tag || currentPage !== 1 || index >= 7 || item.image || !isBookReview(post)) return item
+  const hasImageFrame = (!tag && currentPage === 1 && index < 7) || posts.length === 1
+  if (!hasImageFrame || item.image || !isBookReview(post)) return item
   const image = await getEditorialImage(post)
   return { ...item, image: image?.src }
 }))

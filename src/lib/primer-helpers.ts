@@ -5,6 +5,7 @@ import {
   getPageLink,
   getPostLink,
   getTagLink,
+  getStaticFilePath,
   filePath,
 } from './blog-helpers'
 import type { TocEntry } from '../components/primer/ArticleToc'
@@ -18,6 +19,7 @@ export const toListPost = (post: Post) => ({
   image: post.FeaturedImage?.Url
     ? filePath(new URL(post.FeaturedImage.Url))
     : undefined,
+  thumbnail: getStaticFilePath(`/thumbnails/${encodeURIComponent(post.Slug)}.png`),
   date: getDateStr(post.Date),
   href: getPostLink(post.Slug),
   excerpt:
