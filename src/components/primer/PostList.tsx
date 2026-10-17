@@ -1,10 +1,4 @@
 import { Card, Heading, InlineLink, Link, Text } from '@primer/react-brand';
-import {
-  BookIcon,
-  CodeIcon,
-  NoteIcon,
-  PeopleIcon,
-} from '@primer/octicons-react';
 import BlogPagination from './BlogPagination';
 
 export interface ListPost {
@@ -42,18 +36,7 @@ function ArticleVisual({
   post: ListPost;
   priority?: boolean;
 }) {
-  const topic = post.tags[0]?.name || 'Notes';
-  const Icon =
-    post.format === '読書メモ' ||
-    post.tags.some((tag) => tag.name === '本' || tag.name === '本の感想')
-      ? BookIcon
-      : post.tags.some(
-            (tag) => tag.name === 'EM' || tag.name === '組織・マネジメント'
-          )
-        ? PeopleIcon
-        : post.tags.some((tag) => /技術|GPT|AI|開発/.test(tag.name))
-          ? CodeIcon
-          : NoteIcon;
+  if (!post.image) return null;
   return (
     <a
       href={post.href}
@@ -61,28 +44,13 @@ function ArticleVisual({
       aria-hidden="true"
       tabIndex={-1}
     >
-      {post.image ? (
-        <img
-          src={post.image}
-          alt=""
-          width={1200}
-          height={675}
-          loading={priority ? 'eager' : 'lazy'}
-        />
-      ) : (
-        <span className="note-art" aria-hidden="true">
-          <span className="note-art-topic">{topic}</span>
-          <span className="note-art-sheet">
-            <Icon size={64} />
-            <span className="note-art-rule" />
-            <span className="note-art-rule" />
-            <span className="note-art-rule short" />
-          </span>
-          <span className="note-art-date">
-            {post.date.replaceAll('-', '.')}
-          </span>
-        </span>
-      )}
+      <img
+        src={post.image}
+        alt=""
+        width={1200}
+        height={675}
+        loading={priority ? 'eager' : 'lazy'}
+      />
     </a>
   );
 }
@@ -99,13 +67,17 @@ function Story({
 }) {
   return (
     <article
-      className={
+      className={[
+        'editorial-story',
         featured
-          ? 'editorial-story feature-story'
+          ? 'feature-story'
           : stacked
-            ? 'editorial-story stacked-story'
-            : 'editorial-story compact-story'
-      }
+            ? 'stacked-story'
+            : 'compact-story',
+        !post.image && 'story-without-image',
+      ]
+        .filter(Boolean)
+        .join(' ')}
     >
       <ArticleVisual post={post} priority={featured} />
       <div className="story-copy">
@@ -118,8 +90,13 @@ function Story({
         </div>
         <Heading
           as={headingLevel}
+          className="story-heading"
           size={featured ? '4' : '6'}
-          weight={featured ? 'extrabold' : 'semibold'}
+          weight={
+            featured
+              ? { narrow: 'semibold', regular: 'extrabold', wide: 'extrabold' }
+              : 'semibold'
+          }
         >
           <a href={post.href} className="story-title-link">
             {post.title}
@@ -194,7 +171,12 @@ export default function PostList({
             <div className="latest-section">
               <div className="latest-grid">
                 {latest.map((post) => (
-                  <Story key={post.href} post={post} stacked headingLevel="h3" />
+                  <Story
+                    key={post.href}
+                    post={post}
+                    stacked
+                    headingLevel="h3"
+                  />
                 ))}
               </div>
             </div>
