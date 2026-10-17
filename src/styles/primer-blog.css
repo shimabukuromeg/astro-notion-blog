@@ -4,6 +4,7 @@
 @import '@primer/primitives/dist/css/functional/size/border.css';
 @import '@primer/primitives/dist/css/functional/size/radius.css';
 @import '@primer/primitives/dist/css/functional/size/size.css';
+@import '@primer/primitives/dist/css/functional/size/z-index.css';
 @import '@primer/primitives/dist/css/functional/typography/typography.css';
 @import '@primer/primitives/dist/css/functional/spacing/space.css';
 @import '@primer/primitives/dist/css/functional/themes/light.css';
@@ -65,7 +66,7 @@ a {
   top: calc(-1 * var(--base-size-80));
   left: var(--base-size-16);
   padding: var(--base-size-12);
-  z-index: 100;
+  z-index: var(--zIndex-skipLink);
   background: var(--brand-color-canvas-default);
   border: var(--brand-borderWidth-thick) solid var(--brand-color-focus);
 }
@@ -75,7 +76,7 @@ a {
 .masthead {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--zIndex-sticky);
   background: var(--brand-color-canvas-default);
 }
 .site-header {
@@ -511,10 +512,24 @@ a {
   gap: var(--base-size-8);
   align-items: center;
 }
+.blog-overlay-root {
+  position: relative;
+  z-index: var(--zIndex-modal);
+  font-family: var(--fontStack-system);
+  color: var(--fgColor-default);
+  line-height: var(--base-text-lineHeight-normal);
+}
+.blog-dialog {
+  font-family: var(--fontStack-system);
+}
+.blog-search-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
 .category-nav {
   margin-top: var(--base-size-16);
-  max-height: 50vh;
-  overflow: auto;
 }
 .taxonomy-format-navigation {
   margin-top: var(--base-size-24);
@@ -536,8 +551,13 @@ a {
   margin: var(--base-size-20) 0 var(--base-size-8);
 }
 .search-results {
+  flex: 1;
+  min-height: 0;
   max-height: 55vh;
   overflow: auto;
+}
+.search-result-description {
+  line-height: var(--base-text-lineHeight-normal);
 }
 .empty-search {
   padding: var(--base-size-24);
@@ -1079,6 +1099,25 @@ summary:focus-visible {
   margin: var(--base-size-20) 0;
 }
 @media (max-width: 767px) {
+  .blog-overlay-root .blog-dialog[data-position-narrow='fullscreen'] {
+    /* Use the visible area above the software keyboard, including Safari pan. */
+    height: var(--blog-viewport-height, 100dvh);
+    max-height: var(--blog-viewport-height, 100dvh);
+    align-self: flex-start;
+    margin-top: var(--blog-viewport-top, 0px);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    --text-body-size-medium: var(--base-text-size-md);
+    --text-body-size-small: var(--base-text-size-sm);
+  }
+  .blog-dialog .search-results {
+    max-height: none;
+  }
+  .category-nav a,
+  .taxonomy-format-navigation a {
+    min-height: var(--base-size-48);
+    align-items: center;
+  }
   .quiz-summary {
     padding: var(--base-size-16);
     gap: var(--base-size-8);
