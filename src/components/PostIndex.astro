@@ -5,7 +5,7 @@ import { getNavLink } from '../lib/blog-helpers'
 import { getEditorialImage } from '../lib/editorial-image'
 import { toListPost, pageLinks } from '../lib/primer-helpers'
 import PostList from './primer/PostList'
-import { getTaxonomyLink, isBookReview, matchesTaxonomy, taxonomyLabels, type TaxonomyKind } from '../lib/taxonomy'
+import { getTaxonomyLink, matchesTaxonomy, taxonomyLabels, type TaxonomyKind } from '../lib/taxonomy'
 
 interface Props {
   posts: Post[]
@@ -22,12 +22,11 @@ const topics = [
   { name: '組織・マネジメント', kind: 'category' as const, label: '組織とマネジメント', shortLabel: '組織づくり' },
   { name: '日記', kind: 'category' as const, label: '日記', shortLabel: '日記' },
 ].map(topic => ({...topic, href: getTaxonomyLink(topic.kind, topic.name), count: allPosts.filter(post => matchesTaxonomy(post, topic.kind, topic.name)).length})).filter(topic => topic.count > 0)
-// Book reviews already contain the book cover. Reuse that actual content for
-// the home feed rather than displaying an unrelated placeholder. Explicit
-// FeaturedImage always wins; only the seven visible editorial stories need it.
+// Reuse book covers and the first body image in diaries for the home feed.
+// Explicit FeaturedImage always wins; only the seven latest stories need it.
 const listPosts = await Promise.all(posts.map(async (post, index) => {
   const item = toListPost(post)
-  if (tag || currentPage !== 1 || index >= 7 || item.image || !isBookReview(post)) return item
+  if (tag || currentPage !== 1 || index >= 7 || item.image) return item
   const image = await getEditorialImage(post)
   return { ...item, image: image?.src }
 }))
