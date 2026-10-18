@@ -39,6 +39,20 @@
 }
 :root[data-color-mode='dark'] {
   color-scheme: dark;
+  /* Use Primer's reading surfaces for Brand components and article content.
+     Keep this bridge on the root so portalled controls share the same palette. */
+  --brand-color-canvas-default: var(--bgColor-default);
+  --brand-color-canvas-overlay: var(--overlay-bgColor);
+  --brand-color-canvas-inset: var(--bgColor-inset);
+  --brand-color-canvas-subtle: var(--bgColor-muted);
+  --brand-color-text-default: var(--fgColor-default);
+  --brand-color-text-muted: var(--fgColor-muted);
+  --brand-color-text-subtle: var(--fgColor-muted);
+  --brand-color-border-default: var(--borderColor-default);
+  --brand-color-border-muted: var(--borderColor-default);
+  --brand-color-border-subtle: var(--borderColor-muted);
+  --brand-color-neutral-muted: var(--bgColor-neutral-muted);
+  --brand-color-neutral-subtle: var(--bgColor-neutral-muted);
 }
 * {
   box-sizing: border-box;
