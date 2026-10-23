@@ -20,6 +20,7 @@ const isCanonicalPage = (page) => {
   }
   return pathname === '/' || pathname.endsWith('/');
 };
+
 const getSite = function () {
   if (CUSTOM_DOMAIN) {
     return new URL(BASE_PATH, `https://${CUSTOM_DOMAIN}`).toString();
