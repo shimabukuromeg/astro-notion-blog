@@ -80,7 +80,7 @@ const prevPost = allPosts[currentPostIndex + 1]
 const nextPost = allPosts[currentPostIndex - 1]
 
 const listPost = toListPost(post)
-const articleUrl = new URL(getNavLink(getPostLink(post.Slug)), Astro.site).toString()
+const articleUrl = new URL(getPostLink(post.Slug), Astro.site).toString()
 const firstHeading = blocks[0]?.Heading1
 const normalizeTitle = (title: string) => title.normalize('NFKC').replace(/\s+/g, '')
 const repeatsTitle = firstHeading && !firstHeading.IsToggleable && !firstHeading.Children?.length && normalizeTitle(firstHeading.RichTexts.map(text => text.PlainText).join('')) === normalizeTitle(post.Title)

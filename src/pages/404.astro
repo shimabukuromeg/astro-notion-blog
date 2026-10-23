@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro'
+import { getNavLink } from '../lib/blog-helpers'
+---
+
+<Layout
+  title="ページが見つかりません"
+  description="お探しのページは見つかりませんでした。"
+  path="/404"
+  noindex
+>
+  <div slot="main">
+    <p>お探しのページは見つかりませんでした。</p>
+    <p><a href={getNavLink('/')}>トップへ戻る</a></p>
+  </div>
+</Layout>

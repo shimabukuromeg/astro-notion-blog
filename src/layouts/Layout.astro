@@ -2,7 +2,7 @@
 import { SEO } from 'astro-seo';
 import { PUBLIC_GA_TRACKING_ID, ENABLE_LIGHTBOX } from '../server-constants.ts'
 import { getDatabase, getAllPosts } from '../lib/notion/client.ts'
-import { getNavLink, getStaticFilePath } from '../lib/blog-helpers.ts'
+import { getNavLink, getStaticFilePath, withTrailingSlash } from '../lib/blog-helpers.ts'
 import { getTaxonomyEntries, getTaxonomyLink } from '../lib/taxonomy'
 import '../styles/syntax-coloring.css'
 import GoogleAnalytics from '../components/GoogleAnalytics.astro'
@@ -18,6 +18,7 @@ export interface Props {
   path: string
   ogImage: string
 	openGraph: OpenGraph
+  noindex?: boolean
 }
 
 export type OpenGraph = {
@@ -42,16 +43,27 @@ const {
   description = '',
   path = '/',
   openGraph,
+  noindex = false,
 } = Astro.props;
 
 const siteTitle = title ? `${title} - ${database.Title}` : database.Title
 const profileImageSrc = getStaticFilePath('/favicon.ico')
 const siteDescription = description ? description : database.Description
-const siteURL = new URL(getNavLink(path), Astro.site).toString()
+const siteURL = new URL(withTrailingSlash(getNavLink(path)), Astro.site).toString()
 const siteOGImage = new URL(
   getStaticFilePath('/og.png'),
   Astro.site
 )
+const resolvedOpenGraph = openGraph
+  ? { ...openGraph, basic: { ...openGraph.basic, url: siteURL } }
+  : {
+      basic: {
+        title: `${siteTitle}`,
+        type: 'website',
+        image: `${siteOGImage}`,
+        url: siteURL,
+      },
+    }
 ---
 
 <!DOCTYPE html>
@@ -64,31 +76,30 @@ const siteOGImage = new URL(
         document.documentElement.dataset.colorMode = preference === 'dark' || (!preference && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
       } catch { /* Use the server-rendered light theme when storage is unavailable. */ }
     </script>
-    <meta name="robots" content="max-image-preview:large" />
+    {noindex && <title>{siteTitle}</title>}
+    {noindex && siteDescription && <meta name="description" content={siteDescription} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {!noindex && <meta name="robots" content="max-image-preview:large" />}
     <meta charset="UTF-8" />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" href={profileImageSrc} type="image/jpeg" />
     <meta name="google-site-verification" content="7MyJOp3wAa95XBP7-6eBX7UwA9I-r46zjq0_wIh1SxE" />
-    <SEO
-      charset="UTF-8"
-      title={siteTitle}
-      description={siteDescription}
-      canonical={siteURL}
-      openGraph={openGraph || {
-        basic: {
-          title: `${siteTitle}`,
-          type: "website",
-          image: `${siteOGImage}`,
-        }
-      }}
-      twitter={openGraph ? {
-        card: 'summary_large_image',
-        title: openGraph.basic.title,
-        image: openGraph.basic.image,
-      } : {
-        card: 'summary_large_image',
-      }}
-    />
+    {!noindex && (
+      <SEO
+        charset="UTF-8"
+        title={siteTitle}
+        description={siteDescription}
+        canonical={siteURL}
+        openGraph={resolvedOpenGraph}
+        twitter={openGraph ? {
+          card: 'summary_large_image',
+          title: openGraph.basic.title,
+          image: openGraph.basic.image,
+        } : {
+          card: 'summary_large_image',
+        }}
+      />
+    )}
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
