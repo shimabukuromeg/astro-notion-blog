@@ -122,6 +122,28 @@ export const getStaticFilePath = (path: string): string => {
   return pathJoin(BASE_PATH, path)
 }
 
+export const withTrailingSlash = (path: string): string => {
+  if (!path || path === '/') {
+    return '/'
+  }
+
+  const suffixIndex = Math.min(
+    ...['?', '#']
+      .map((separator) => path.indexOf(separator))
+      .filter((index) => index >= 0)
+  )
+  const pathname = Number.isFinite(suffixIndex)
+    ? path.slice(0, suffixIndex)
+    : path
+  const suffix = Number.isFinite(suffixIndex) ? path.slice(suffixIndex) : ''
+
+  if (pathname === '/' || /\.[^/]+$/.test(pathname)) {
+    return path
+  }
+
+  return `${pathname.endsWith('/') ? pathname : `${pathname}/`}${suffix}`
+}
+
 export const getNavLink = (nav: string) => {
   if ((!nav || nav === '/') && BASE_PATH) {
     return pathJoin(BASE_PATH, '') + '/'
@@ -131,23 +153,27 @@ export const getNavLink = (nav: string) => {
 }
 
 export const getPostLink = (slug: string) => {
-  return pathJoin(BASE_PATH, `/posts/${slug}`)
+  return withTrailingSlash(pathJoin(BASE_PATH, `/posts/${slug}`))
 }
 
 export const getTagLink = (tag: string) => {
-  return pathJoin(BASE_PATH, `/posts/tag/${encodeURIComponent(tag)}`)
+  return withTrailingSlash(
+    pathJoin(BASE_PATH, `/posts/tag/${encodeURIComponent(tag)}`)
+  )
 }
 
 export const getPageLink = (page: number, tag: string) => {
   if (page === 1) {
-    return tag ? getTagLink(tag) : pathJoin(BASE_PATH, '/')
+    return tag ? getTagLink(tag) : getNavLink('/')
   }
-  return tag
-    ? pathJoin(
-        BASE_PATH,
-        `/posts/tag/${encodeURIComponent(tag)}/page/${page.toString()}`
-      )
-    : pathJoin(BASE_PATH, `/posts/page/${page.toString()}`)
+  return withTrailingSlash(
+    tag
+      ? pathJoin(
+          BASE_PATH,
+          `/posts/tag/${encodeURIComponent(tag)}/page/${page.toString()}`
+        )
+      : pathJoin(BASE_PATH, `/posts/page/${page.toString()}`)
+  )
 }
 
 export const getDateStr = (date: string) => {

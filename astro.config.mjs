@@ -5,6 +5,22 @@ import CustomIconDownloader from './src/integrations/custom-icon-downloader';
 import FeaturedImageDownloader from './src/integrations/featured-image-downloader';
 import PublicNotionCopier from './src/integrations/public-notion-copier';
 import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
+
+const isCanonicalPage = (page) => {
+  const { pathname } = new URL(page);
+  if (pathname.startsWith('/og/')) {
+    return false;
+  }
+  if (pathname === '/feed' || pathname === '/feed/') {
+    return false;
+  }
+  if (/\.[a-z0-9]+$/i.test(pathname)) {
+    return false;
+  }
+  return pathname === '/' || pathname.endsWith('/');
+};
+
 const getSite = function () {
   if (CUSTOM_DOMAIN) {
     return new URL(BASE_PATH, `https://${CUSTOM_DOMAIN}`).toString();
@@ -28,6 +44,7 @@ const getSite = function () {
 export default defineConfig({
   site: getSite(),
   base: BASE_PATH,
+  trailingSlash: 'always',
   vite: {
     optimizeDeps: {
       include: ['@primer/react', '@primer/react/next', '@primer/react-brand'],
@@ -48,5 +65,6 @@ export default defineConfig({
     FeaturedImageDownloader(),
     PublicNotionCopier(),
     react(),
+    sitemap({ filter: isCanonicalPage }),
   ],
 });
