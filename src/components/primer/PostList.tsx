@@ -199,7 +199,12 @@ export default function PostList({
             <div className="latest-section">
               <div className="latest-grid">
                 {latest.map((post) => (
-                  <Story key={post.href} post={post} stacked headingLevel="h3" />
+                  <Story
+                    key={post.href}
+                    post={post}
+                    stacked
+                    headingLevel="h3"
+                  />
                 ))}
               </div>
             </div>

@@ -23,7 +23,11 @@ function XLogo() {
   );
 }
 
-export default function ArticleShare({ title, url, placement = 'footer' }: Props) {
+export default function ArticleShare({
+  title,
+  url,
+  placement = 'footer',
+}: Props) {
   const shareUrl = new URL('https://x.com/intent/tweet');
   shareUrl.searchParams.set('text', title);
   shareUrl.searchParams.set('url', url);

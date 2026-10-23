@@ -4,7 +4,7 @@ import CoverImageDownloader from './src/integrations/cover-image-downloader';
 import CustomIconDownloader from './src/integrations/custom-icon-downloader';
 import FeaturedImageDownloader from './src/integrations/featured-image-downloader';
 import PublicNotionCopier from './src/integrations/public-notion-copier';
-import react from "@astrojs/react";
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 
 const isCanonicalPage = (page) => {
@@ -31,11 +31,13 @@ const getSite = function () {
     if (process.env.CF_PAGES_BRANCH !== 'main') {
       return new URL(BASE_PATH, process.env.CF_PAGES_URL).toString();
     }
-    return new URL(BASE_PATH, `https://${new URL(process.env.CF_PAGES_URL).host.split('.').slice(1).join('.')}`).toString();
+    return new URL(
+      BASE_PATH,
+      `https://${new URL(process.env.CF_PAGES_URL).host.split('.').slice(1).join('.')}`
+    ).toString();
   }
   return new URL(BASE_PATH, 'http://localhost:4321').toString();
 };
-
 
 // https://astro.build/config
 export default defineConfig({
@@ -43,14 +45,25 @@ export default defineConfig({
   base: BASE_PATH,
   trailingSlash: 'always',
   vite: {
-    optimizeDeps: { include: ['@primer/react', '@primer/react/next', '@primer/react-brand'] },
+    optimizeDeps: {
+      include: ['@primer/react', '@primer/react/next', '@primer/react-brand'],
+    },
     ssr: { noExternal: ['@primer/react'] },
     // Brand 0.57 ships UMD: Node handles dev SSR; Rollup converts it for builds.
-    plugins: [{
-      name: 'primer-brand-build-interop',
-      apply: 'build',
-      config: () => ({ ssr: { noExternal: ['@primer/react-brand'] } })
-    }]
+    plugins: [
+      {
+        name: 'primer-brand-build-interop',
+        apply: 'build',
+        config: () => ({ ssr: { noExternal: ['@primer/react-brand'] } }),
+      },
+    ],
   },
-  integrations: [CoverImageDownloader(), CustomIconDownloader(), FeaturedImageDownloader(), PublicNotionCopier(), react(), sitemap({ filter: isCanonicalPage })]
+  integrations: [
+    CoverImageDownloader(),
+    CustomIconDownloader(),
+    FeaturedImageDownloader(),
+    PublicNotionCopier(),
+    react(),
+    sitemap({ filter: isCanonicalPage }),
+  ],
 });

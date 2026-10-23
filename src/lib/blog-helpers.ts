@@ -132,7 +132,9 @@ export const withTrailingSlash = (path: string): string => {
       .map((separator) => path.indexOf(separator))
       .filter((index) => index >= 0)
   )
-  const pathname = Number.isFinite(suffixIndex) ? path.slice(0, suffixIndex) : path
+  const pathname = Number.isFinite(suffixIndex)
+    ? path.slice(0, suffixIndex)
+    : path
   const suffix = Number.isFinite(suffixIndex) ? path.slice(suffixIndex) : ''
 
   if (pathname === '/' || /\.[^/]+$/.test(pathname)) {

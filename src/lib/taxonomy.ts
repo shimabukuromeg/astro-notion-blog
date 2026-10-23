@@ -1,5 +1,9 @@
 import type { Post, SelectProperty } from './interfaces'
-import { getNavLink, getStaticFilePath, withTrailingSlash } from './blog-helpers'
+import {
+  getNavLink,
+  getStaticFilePath,
+  withTrailingSlash,
+} from './blog-helpers'
 
 export const taxonomyKinds = ['category', 'format', 'topic'] as const
 export type TaxonomyKind = (typeof taxonomyKinds)[number]
@@ -59,10 +63,7 @@ export function isBookReview(post: Post) {
 export function getDisplayFormat(post: Post) {
   const category = post.Category?.name
   const format = post.Format?.name
-  if (
-    category === format ||
-    (category === '本の感想' && format === '読書メモ')
-  )
+  if (category === format || (category === '本の感想' && format === '読書メモ'))
     return undefined
   return format
 }
