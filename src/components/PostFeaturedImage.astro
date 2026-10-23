@@ -1,5 +1,6 @@
 ---
 import type { Post } from '../lib/interfaces.ts'
+import { getPostLink } from '../lib/blog-helpers.ts'
 
 export interface Props {
   post: Post
@@ -12,7 +13,7 @@ const image = `/og/${post.Slug}.png`
 ---
 
 <div class="post-thumbnail">
-  <a href={`/posts/${post.Slug}`}>
+  <a href={getPostLink(post.Slug)}>
     <img src={image} alt={post.Title} loading="lazy" />
   </a>
 </div>

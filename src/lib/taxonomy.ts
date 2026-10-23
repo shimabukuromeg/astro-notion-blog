@@ -1,5 +1,5 @@
 import type { Post, SelectProperty } from './interfaces'
-import { getNavLink, getStaticFilePath } from './blog-helpers'
+import { getNavLink, getStaticFilePath, withTrailingSlash } from './blog-helpers'
 
 export const taxonomyKinds = ['category', 'format', 'topic'] as const
 export type TaxonomyKind = (typeof taxonomyKinds)[number]
@@ -37,8 +37,10 @@ export function getTaxonomyEntries(posts: Post[], kind: TaxonomyKind) {
 }
 
 export function getTaxonomyLink(kind: TaxonomyKind, name: string, page = 1) {
-  return getNavLink(
-    `/posts/${kind}/${encodeURIComponent(name)}${page > 1 ? `/page/${page}` : ''}`
+  return withTrailingSlash(
+    getNavLink(
+      `/posts/${kind}/${encodeURIComponent(name)}${page > 1 ? `/page/${page}` : ''}`
+    )
   )
 }
 
