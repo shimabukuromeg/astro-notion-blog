@@ -9,7 +9,8 @@ export async function getEditorialImage(post: Post) {
     const url = post.FeaturedImage.Url
     return { url, src: filePath(new URL(url)) }
   }
-  if (!isBookReview(post) && !matchesTaxonomy(post, 'category', '日記')) return undefined
+  if (!isBookReview(post) && !matchesTaxonomy(post, 'category', '日記'))
+    return undefined
   const blocks = await getAllBlocksByBlockId(post.PageId)
   const image = extractTargetBlocks('image', blocks).find(
     (block) => block.Image

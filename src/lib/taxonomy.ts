@@ -57,10 +57,7 @@ export function isBookReview(post: Post) {
 export function getDisplayFormat(post: Post) {
   const category = post.Category?.name
   const format = post.Format?.name
-  if (
-    category === format ||
-    (category === '本の感想' && format === '読書メモ')
-  )
+  if (category === format || (category === '本の感想' && format === '読書メモ'))
     return undefined
   return format
 }

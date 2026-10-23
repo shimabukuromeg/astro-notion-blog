@@ -83,10 +83,7 @@ const getAllPages = async () => {
     .for(pages)
     .process(async (page) => {
       const cachePath = path.join(cacheDir, `${page.id}.json`);
-      const markerPath = path.join(
-        cacheDir,
-        `${page.id}.last_edited_time`
-      );
+      const markerPath = path.join(cacheDir, `${page.id}.last_edited_time`);
 
       if (
         fs.existsSync(cachePath) &&
